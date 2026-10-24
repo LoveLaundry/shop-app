@@ -4,8 +4,11 @@ import { useAuth } from '../auth/AuthContext'
 import clsx from 'clsx'
 
 export function AppShell() {
-  const { user, signOut } = useAuth()
+  const { user, signOut, laundries, currentLaundry, switchLaundry } = useAuth()
   const scope = user?.clientName ?? user?.laundry
+  // Only shown when this login really belongs to more than one laundry; with a
+  // single association a switch control would be dead UI.
+  const canSwitch = laundries.length > 1
 
   return (
     <div className="min-h-dvh bg-slate-50 text-slate-900">
@@ -16,6 +19,22 @@ export function AppShell() {
             {scope ? <p className="truncate text-xs text-slate-500">{scope}</p> : null}
           </div>
           <div className="flex items-center gap-3">
+            {canSwitch ? (
+              <label className="flex items-center gap-2">
+                <span className="sr-only">Laundry</span>
+                <select
+                  value={currentLaundry ?? ''}
+                  onChange={(event) => void switchLaundry(event.target.value)}
+                  className="max-w-[14rem] rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs font-medium text-slate-700"
+                >
+                  {laundries.map((item) => (
+                    <option key={item.laundry_id} value={item.laundry_id}>
+                      {item.laundry_name || item.laundry_id}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : null}
             <div className="text-right">
               <p className="text-sm font-medium leading-tight">{user?.name}</p>
               <p className="text-[11px] uppercase tracking-wide text-slate-500">{user?.role}</p>
