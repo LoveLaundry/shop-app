@@ -5,6 +5,8 @@ import { LoginPage } from './auth/LoginPage'
 import { AppShell } from './shell/AppShell'
 import { TodayPage } from './pages/TodayPage'
 import { BillsPage } from './pages/BillsPage'
+import { OrdersPage } from './pages/OrdersPage'
+import { NewOrderPage } from './pages/NewOrderPage'
 
 function RequireAuth({ children }: { children: ReactNode }) {
   const { isAuthenticated } = useAuth()
@@ -26,6 +28,8 @@ export function App() {
             }
           >
             <Route index element={<TodayPage />} />
+            <Route path="orders" element={<OrdersPage />} />
+            <Route path="orders/new" element={<NewOrderPage />} />
             <Route path="bills" element={<BillsPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
