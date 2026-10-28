@@ -137,11 +137,8 @@ export function LoginPage() {
               {pending ? 'Signing in…' : 'Sign in'}
             </button>
 
-            <p className="text-center text-sm text-slate-600">
-              Don't have an account?{' '}
-              <Link to="/register" className="font-medium text-slate-900 underline underline-offset-2">
-                Register
-              </Link>
+            <p className="text-center text-sm text-slate-500">
+              Don't have an account? Contact your platform administrator.
             </p>
           </form>
         )}
