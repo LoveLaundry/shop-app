@@ -5,6 +5,14 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
+      "source": "/api/user/:path*",
+      "destination": "https://love-laundry-user-service.vercel.app/:path*"
+    },
+    {
+      "source": "/api/bills/:path*",
+      "destination": "https://bill-service-puce.vercel.app/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
