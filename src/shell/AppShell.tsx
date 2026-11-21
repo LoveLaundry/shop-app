@@ -40,55 +40,91 @@ export function AppShell() {
 
   return (
     <div className="app-shell">
-      <header className="app-header">
-        <div className="app-header-inner">
-          <div className="app-identity">
-            <span className="app-mark" aria-hidden="true">
-              <WashingMachine />
-            </span>
-            <div className="min-w-0">
-              <p className="app-title">{appConfig.title}</p>
-              {scope ? <p className="app-subtitle">{scope}</p> : null}
-            </div>
-          </div>
-          <div className="app-header-actions">
-            {canSwitch ? (
-              <label className="select-wrap">
-                <Building2 aria-hidden="true" />
-                <span className="sr-only">Laundry</span>
-                <select
-                  value={currentLaundry ?? ''}
-                  onChange={(event) => void switchLaundry(event.target.value)}
-                  className="field-input select-input scope-select"
-                >
-                  {laundries.map((item) => (
-                    <option key={item.laundry_id} value={item.laundry_id}>
-                      {item.laundry_name || item.laundry_id}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            ) : null}
-            <div className="app-user">
-              <span className="app-avatar" aria-hidden="true">
-                <UserRound />
-              </span>
-              <div className="hidden text-right sm:block">
-                <p style={{ margin: 0, fontSize: '0.8rem', fontWeight: 700, lineHeight: 1.2 }}>{user?.name}</p>
-                <p style={{ margin: 0, fontSize: '0.66rem', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--muted)' }}>
-                  {user?.role}
-                </p>
-              </div>
-            </div>
-            <button type="button" onClick={signOut} className="btn btn-secondary" aria-label="Sign out">
-              <LogOut />
-              <span className="hidden sm:inline">Sign out</span>
-            </button>
-          </div>
+      <aside className="app-sidebar">
+        <div className="sidebar-brand">
+          <span className="sidebar-mark" aria-hidden="true">
+            <WashingMachine />
+          </span>
+          <p className="sidebar-title">{appConfig.title}</p>
         </div>
 
-        <nav className="app-nav" aria-label="Main navigation">
-          <div className="app-nav-inner">
+        <p className="sidebar-section">Workspace</p>
+        <nav className="sidebar-nav" aria-label="Main navigation">
+          {appConfig.nav.map((item) => {
+            const Icon = NAV_ICONS[item.path] ?? Activity
+            return (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                end={item.path === '/'}
+                className={({ isActive }) => clsx('sidebar-link', isActive && 'is-active')}
+              >
+                <Icon aria-hidden="true" />
+                {item.label}
+              </NavLink>
+            )
+          })}
+        </nav>
+
+        <div className="sidebar-bottom">
+          <NavLink
+            to="/about"
+            className={({ isActive }) => clsx('sidebar-link', isActive && 'is-active')}
+          >
+            <Info aria-hidden="true" />
+            About this portal
+          </NavLink>
+          <button type="button" onClick={signOut} className="sidebar-link">
+            <LogOut aria-hidden="true" />
+            Sign out
+          </button>
+        </div>
+      </aside>
+
+      <div className="app-content">
+        <header className="app-topbar">
+          <div className="topbar-main">
+            <div className="topbar-title">
+              <h1>{appConfig.title}</h1>
+              <p className="topbar-subtitle">{scope ?? appConfig.tagline}</p>
+            </div>
+
+            <div className="topbar-actions">
+              {canSwitch ? (
+                <label className="select-wrap">
+                  <Building2 aria-hidden="true" />
+                  <span className="sr-only">Laundry</span>
+                  <select
+                    value={currentLaundry ?? ''}
+                    onChange={(event) => void switchLaundry(event.target.value)}
+                    className="field-input select-input scope-select"
+                  >
+                    {laundries.map((item) => (
+                      <option key={item.laundry_id} value={item.laundry_id}>
+                        {item.laundry_name || item.laundry_id}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+
+              <div className="app-user">
+                <span className="app-avatar" aria-hidden="true">
+                  <UserRound />
+                </span>
+                <div className="user-meta">
+                  <p className="user-name">{user?.name}</p>
+                  <p className="user-role">{user?.role}</p>
+                </div>
+              </div>
+
+              <button type="button" onClick={signOut} className="btn btn-secondary" aria-label="Sign out">
+                <LogOut />
+              </button>
+            </div>
+          </div>
+
+          <nav className="mobile-nav" aria-label="Main navigation">
             {appConfig.nav.map((item) => {
               const Icon = NAV_ICONS[item.path] ?? Activity
               return (
@@ -96,30 +132,34 @@ export function AppShell() {
                   key={item.path}
                   to={item.path}
                   end={item.path === '/'}
-                  className={({ isActive }) => clsx('app-nav-link', isActive && 'is-active')}
+                  className={({ isActive }) => clsx('mobile-nav-link', isActive && 'is-active')}
                 >
                   <Icon aria-hidden="true" />
                   {item.label}
                 </NavLink>
               )
             })}
+            <NavLink to="/about" className="mobile-nav-link">
+              <Info aria-hidden="true" />
+              About
+            </NavLink>
+          </nav>
+        </header>
+
+        <main className="app-main">
+          <Outlet />
+        </main>
+
+        <footer className="app-footer">
+          <div className="app-footer-inner">
+            <span>Operations portal · Signed in as {user?.name ?? 'user'}</span>
+            <NavLink to="/about" className="text-link">
+              <Info aria-hidden="true" />
+              About this portal
+            </NavLink>
           </div>
-        </nav>
-      </header>
-
-      <main className="app-main">
-        <Outlet />
-      </main>
-
-      <footer className="app-footer">
-        <div className="app-footer-inner">
-          <span>Operations portal · Signed in as {user?.name ?? 'user'}</span>
-          <NavLink to="/about" className="text-link">
-            <Info aria-hidden="true" />
-            About this portal
-          </NavLink>
-        </div>
-      </footer>
+        </footer>
+      </div>
     </div>
   )
 }

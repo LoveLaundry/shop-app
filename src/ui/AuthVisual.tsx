@@ -11,7 +11,7 @@ export function AuthVisual({
   const isShop = appConfig.clientType === 'SHOP'
 
   return (
-    <aside className="auth-visual" aria-hidden="true">
+    <aside className={isShop ? 'auth-visual is-shop' : 'auth-visual is-hotel'} aria-hidden="true">
       <div className="visual-top">
         <span className="visual-mark">
           <WashingMachine />
