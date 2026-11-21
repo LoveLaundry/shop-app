@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { ArrowLeft, Send } from 'lucide-react'
 import { dataApi, errorMessage } from '../api/client'
 import { PageHeader, Panel } from '../ui/kit'
 
@@ -128,6 +129,7 @@ export function NewOrderPage() {
             disabled={busy}
             className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
           >
+            <Send size={15} aria-hidden="true" />
             {busy ? 'Sending…' : 'Send order'}
           </button>
           <button
@@ -135,6 +137,7 @@ export function NewOrderPage() {
             onClick={() => navigate('/orders')}
             className="rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-600"
           >
+            <ArrowLeft size={15} aria-hidden="true" />
             Cancel
           </button>
         </div>

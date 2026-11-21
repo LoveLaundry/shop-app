@@ -1,14 +1,35 @@
 import { NavLink, Outlet } from 'react-router-dom'
+import type { LucideIcon } from 'lucide-react'
+import {
+  Activity,
+  Building2,
+  FileText,
+  Info,
+  LayoutDashboard,
+  LogOut,
+  Package,
+  PlusCircle,
+  ReceiptText,
+  Shirt,
+  Ticket,
+  Truck,
+  UserRound,
+  WashingMachine,
+} from 'lucide-react'
 import { appConfig } from '../config/app'
 import { useAuth } from '../auth/AuthContext'
 import clsx from 'clsx'
 
-const initials = appConfig.title
-  .split(/\s+/)
-  .map((word) => word[0])
-  .join('')
-  .slice(0, 2)
-  .toUpperCase()
+const NAV_ICONS: Record<string, LucideIcon> = {
+  '/': LayoutDashboard,
+  '/orders': Package,
+  '/orders/new': PlusCircle,
+  '/bills': ReceiptText,
+  '/gate-passes': Ticket,
+  '/linens': Shirt,
+  '/deliveries': Truck,
+  '/invoices': FileText,
+}
 
 export function AppShell() {
   const { user, signOut, laundries, currentLaundry, switchLaundry } = useAuth()
@@ -23,7 +44,7 @@ export function AppShell() {
         <div className="app-header-inner">
           <div className="app-identity">
             <span className="app-mark" aria-hidden="true">
-              {initials}
+              <WashingMachine />
             </span>
             <div className="min-w-0">
               <p className="app-title">{appConfig.title}</p>
@@ -32,7 +53,8 @@ export function AppShell() {
           </div>
           <div className="app-header-actions">
             {canSwitch ? (
-              <label>
+              <label className="select-wrap">
+                <Building2 aria-hidden="true" />
                 <span className="sr-only">Laundry</span>
                 <select
                   value={currentLaundry ?? ''}
@@ -47,30 +69,40 @@ export function AppShell() {
                 </select>
               </label>
             ) : null}
-            <div className="hidden text-right sm:block">
-              <p style={{ margin: 0, fontSize: '0.8rem', fontWeight: 600, lineHeight: 1.2 }}>{user?.name}</p>
-              <p style={{ margin: 0, fontSize: '0.68rem', letterSpacing: '0.04em', textTransform: 'uppercase', color: 'var(--muted)' }}>
-                {user?.role}
-              </p>
+            <div className="app-user">
+              <span className="app-avatar" aria-hidden="true">
+                <UserRound />
+              </span>
+              <div className="hidden text-right sm:block">
+                <p style={{ margin: 0, fontSize: '0.8rem', fontWeight: 700, lineHeight: 1.2 }}>{user?.name}</p>
+                <p style={{ margin: 0, fontSize: '0.66rem', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--muted)' }}>
+                  {user?.role}
+                </p>
+              </div>
             </div>
             <button type="button" onClick={signOut} className="btn btn-secondary" aria-label="Sign out">
-              Sign out
+              <LogOut />
+              <span className="hidden sm:inline">Sign out</span>
             </button>
           </div>
         </div>
 
         <nav className="app-nav" aria-label="Main navigation">
           <div className="app-nav-inner">
-            {appConfig.nav.map((item) => (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                end={item.path === '/'}
-                className={({ isActive }) => clsx('app-nav-link', isActive && 'is-active')}
-              >
-                {item.label}
-              </NavLink>
-            ))}
+            {appConfig.nav.map((item) => {
+              const Icon = NAV_ICONS[item.path] ?? Activity
+              return (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  end={item.path === '/'}
+                  className={({ isActive }) => clsx('app-nav-link', isActive && 'is-active')}
+                >
+                  <Icon aria-hidden="true" />
+                  {item.label}
+                </NavLink>
+              )
+            })}
           </div>
         </nav>
       </header>
@@ -83,6 +115,7 @@ export function AppShell() {
         <div className="app-footer-inner">
           <span>Operations portal · Signed in as {user?.name ?? 'user'}</span>
           <NavLink to="/about" className="text-link">
+            <Info aria-hidden="true" />
             About this portal
           </NavLink>
         </div>

@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { ArrowRight, BadgeCheck, Building2, Info, ShieldCheck, Store, WashingMachine } from 'lucide-react'
 import { appConfig } from '../config/app'
 import { useAuth } from '../auth/AuthContext'
 
@@ -9,6 +10,12 @@ export function AboutPage() {
   return (
     <main className="about-layout">
       <div className="about-card">
+        <div className="about-banner" aria-hidden="true">
+          <span className="about-banner-icon">
+            <WashingMachine />
+          </span>
+        </div>
+
         <div className="about-brand">
           <span className="about-mark" aria-hidden="true">
             LL
@@ -17,6 +24,7 @@ export function AboutPage() {
             <p className="about-name">LoveLaundry</p>
             <p className="about-role">Platform operator</p>
           </div>
+          <BadgeCheck size={17} style={{ marginLeft: 'auto', color: 'var(--accent)' }} aria-hidden="true" />
         </div>
 
         <div className="about-body">
@@ -37,15 +45,18 @@ export function AboutPage() {
 
           <dl className="about-meta">
             <div>
-              <dt>Portal</dt>
+              <dt><Info size={12} aria-hidden="true" /> Portal</dt>
               <dd>{appConfig.title}</dd>
             </div>
             <div>
-              <dt>Account type</dt>
+              <dt>
+                {isShop ? <Store size={12} aria-hidden="true" /> : <Building2 size={12} aria-hidden="true" />}
+                {' '}Account type
+              </dt>
               <dd>{isShop ? 'Shop' : 'Hotel'}</dd>
             </div>
             <div>
-              <dt>Operator</dt>
+              <dt><ShieldCheck size={12} aria-hidden="true" /> Operator</dt>
               <dd>LoveLaundry</dd>
             </div>
           </dl>
@@ -54,6 +65,7 @@ export function AboutPage() {
         <div className="about-actions">
           <Link to={isAuthenticated ? '/' : '/login'} className="btn btn-primary">
             {isAuthenticated ? 'Back to portal' : 'Back to sign in'}
+            <ArrowRight aria-hidden="true" />
           </Link>
         </div>
       </div>

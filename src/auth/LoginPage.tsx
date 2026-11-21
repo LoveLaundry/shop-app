@@ -1,7 +1,9 @@
 import { useState, type FormEvent } from 'react'
 import { Link, Navigate } from 'react-router-dom'
+import { ArrowRight, Building2, Info, LockKeyhole, ShieldCheck, UserRound } from 'lucide-react'
 import { errorMessage } from '../api/client'
 import { appConfig } from '../config/app'
+import { AuthVisual } from '../ui/AuthVisual'
 import type { Association } from './associations'
 import { LaundryChoiceRequired, useAuth } from './AuthContext'
 
@@ -45,93 +47,111 @@ export function LoginPage() {
 
   return (
     <main className="auth-layout">
-      <div className="auth-card">
-        <div className="auth-head">
-          <p className="auth-kicker">Secure access</p>
-          <h1 className="auth-title">{appConfig.title}</h1>
-          <p className="auth-subtitle">{appConfig.tagline}</p>
-        </div>
+      <div className="auth-frame">
+        <AuthVisual />
 
-        {choices ? (
-          <div className="auth-panel">
-            <h2 className="panel-title">Choose a laundry</h2>
-            <p className="panel-note">
-              This login is registered with more than one laundry. Each one keeps its own
-              records.
-            </p>
-            <div className="choice-list">
-              {choices.map((choice) => (
-                <button
-                  key={`${choice.laundry_id}-${choice.client_name}`}
-                  type="button"
-                  disabled={pending || choice.status.toUpperCase() !== 'ACTIVE'}
-                  onClick={() => void attempt(choice.laundry_id)}
-                  className="choice-button"
-                >
-                  <span>
-                    <span className="block font-medium text-slate-900">
-                      {choice.laundry_name || choice.laundry_id}
-                    </span>
-                    <span className="block text-xs text-slate-500">{choice.client_name}</span>
-                  </span>
-                  {choice.status.toUpperCase() !== 'ACTIVE' ? (
-                    <span className="chip">{choice.status}</span>
-                  ) : null}
-                </button>
-              ))}
-            </div>
-            <button type="button" onClick={() => setChoices(null)} className="btn btn-ghost" style={{ marginTop: '0.9rem' }}>
-              Use a different login
-            </button>
+        <div className="auth-card">
+          <div className="auth-head">
+            <p className="auth-kicker">Secure access</p>
+            <h1 className="auth-title">{appConfig.title}</h1>
+            <p className="auth-subtitle">{appConfig.tagline}</p>
           </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="auth-panel">
-            <div className="auth-fields">
-              <label className="block">
-                <span className="field-label">{isClient ? sideLabel : 'Username'}</span>
-                <input
-                  value={username}
-                  onChange={(event) => setUsername(event.target.value)}
-                  autoComplete="username"
-                  required
-                  className="field-input"
-                />
-              </label>
 
-              <label className="block">
-                <span className="field-label">Password</span>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  autoComplete="current-password"
-                  required
-                  className="field-input"
-                />
-              </label>
-
-              {error ? (
-                <p role="alert" className="auth-error">
-                  {error}
-                </p>
-              ) : null}
-
-              <button type="submit" disabled={pending} className="btn btn-primary btn-block">
-                {pending ? 'Signing in…' : 'Sign in'}
-              </button>
-
-              <p className="auth-foot">
-                Don't have an account? Contact your platform administrator.
+          {choices ? (
+            <div className="auth-panel">
+              <h2 className="panel-title">Choose a laundry</h2>
+              <p className="panel-note">
+                This login is registered with more than one laundry. Each one keeps its own
+                records.
               </p>
+              <div className="choice-list">
+                {choices.map((choice) => (
+                  <button
+                    key={`${choice.laundry_id}-${choice.client_name}`}
+                    type="button"
+                    disabled={pending || choice.status.toUpperCase() !== 'ACTIVE'}
+                    onClick={() => void attempt(choice.laundry_id)}
+                    className="choice-button"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Building2 size={16} className="text-accent" aria-hidden="true" />
+                      <span>
+                        <span className="block font-medium">{choice.laundry_name || choice.laundry_id}</span>
+                        <span className="block text-xs text-slate-400">{choice.client_name}</span>
+                      </span>
+                    </span>
+                    {choice.status.toUpperCase() !== 'ACTIVE' ? (
+                      <span className="chip">{choice.status}</span>
+                    ) : (
+                      <ArrowRight size={15} aria-hidden="true" />
+                    )}
+                  </button>
+                ))}
+              </div>
+              <button type="button" onClick={() => setChoices(null)} className="btn btn-ghost" style={{ marginTop: '0.9rem' }}>
+                Use a different login
+              </button>
             </div>
-          </form>
-        )}
+          ) : (
+            <form onSubmit={handleSubmit} className="auth-panel">
+              <div className="auth-fields">
+                <label className="block">
+                  <span className="field-label">{isClient ? sideLabel : 'Username'}</span>
+                  <span className="input-with-icon">
+                    <UserRound className="input-icon" aria-hidden="true" />
+                    <input
+                      value={username}
+                      onChange={(event) => setUsername(event.target.value)}
+                      autoComplete="username"
+                      required
+                      className="field-input"
+                      placeholder="Your account username"
+                    />
+                  </span>
+                </label>
 
-        <p className="auth-foot">
-          <Link to="/about" className="text-link">
-            About this portal
-          </Link>
-        </p>
+                <label className="block">
+                  <span className="field-label">Password</span>
+                  <span className="input-with-icon">
+                    <LockKeyhole className="input-icon" aria-hidden="true" />
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(event) => setPassword(event.target.value)}
+                      autoComplete="current-password"
+                      required
+                      className="field-input"
+                      placeholder="Your password"
+                    />
+                  </span>
+                </label>
+
+                {error ? (
+                  <p role="alert" className="auth-error">
+                    <ShieldCheck aria-hidden="true" />
+                    {error}
+                  </p>
+                ) : null}
+
+                <button type="submit" disabled={pending} className="btn btn-primary btn-block">
+                  {pending ? 'Signing in…' : 'Sign in'}
+                  {!pending ? <ArrowRight aria-hidden="true" /> : null}
+                </button>
+
+                <p className="auth-foot">
+                  Don't have an account? Contact your platform administrator.
+                </p>
+              </div>
+            </form>
+          )}
+
+          <p className="auth-foot">
+            <Link to="/about" className="text-link">
+              <Info aria-hidden="true" />
+              About this portal
+            </Link>
+          </p>
+        </div>
       </div>
     </main>
   )
