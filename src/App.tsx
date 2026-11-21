@@ -8,6 +8,7 @@ import { TodayPage } from './pages/TodayPage'
 import { BillsPage } from './pages/BillsPage'
 import { OrdersPage } from './pages/OrdersPage'
 import { NewOrderPage } from './pages/NewOrderPage'
+import { AboutPage } from './pages/AboutPage'
 
 function RequireAuth({ children }: { children: ReactNode }) {
   const { isAuthenticated } = useAuth()
@@ -22,6 +23,7 @@ export function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/about" element={<AboutPage />} />
           <Route
             element={
               <RequireAuth>

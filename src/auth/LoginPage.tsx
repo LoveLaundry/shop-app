@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Navigate } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { errorMessage } from '../api/client'
 import { appConfig } from '../config/app'
 import type { Association } from './associations'
@@ -44,104 +44,94 @@ export function LoginPage() {
   }
 
   return (
-    <main className="grid min-h-dvh place-items-center bg-slate-50 px-4">
-      <div className="w-full max-w-sm">
-        <div className="mb-8 text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-            Love Laundry
-          </p>
-          <h1 className="mt-2 text-2xl font-semibold text-slate-900">{appConfig.title}</h1>
-          <p className="mt-1 text-sm text-slate-500">{appConfig.tagline}</p>
+    <main className="auth-layout">
+      <div className="auth-card">
+        <div className="auth-head">
+          <p className="auth-kicker">Secure access</p>
+          <h1 className="auth-title">{appConfig.title}</h1>
+          <p className="auth-subtitle">{appConfig.tagline}</p>
         </div>
 
         {choices ? (
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-sm font-semibold text-slate-900">Choose a laundry</h2>
-            <p className="mt-1 text-xs text-slate-500">
+          <div className="auth-panel">
+            <h2 className="panel-title">Choose a laundry</h2>
+            <p className="panel-note">
               This login is registered with more than one laundry. Each one keeps its own
               records.
             </p>
-            <ul className="mt-4 space-y-2">
+            <div className="choice-list">
               {choices.map((choice) => (
-                <li key={`${choice.laundry_id}-${choice.client_name}`}>
-                  <button
-                    type="button"
-                    disabled={pending || choice.status.toUpperCase() !== 'ACTIVE'}
-                    onClick={() => void attempt(choice.laundry_id)}
-                    className="flex w-full items-center justify-between rounded-lg border border-slate-200 px-3 py-2.5 text-left text-sm transition hover:border-slate-900 disabled:opacity-50"
-                  >
-                    <span>
-                      <span className="block font-medium text-slate-900">
-                        {choice.laundry_name || choice.laundry_id}
-                      </span>
-                      <span className="block text-xs text-slate-500">{choice.client_name}</span>
+                <button
+                  key={`${choice.laundry_id}-${choice.client_name}`}
+                  type="button"
+                  disabled={pending || choice.status.toUpperCase() !== 'ACTIVE'}
+                  onClick={() => void attempt(choice.laundry_id)}
+                  className="choice-button"
+                >
+                  <span>
+                    <span className="block font-medium text-slate-900">
+                      {choice.laundry_name || choice.laundry_id}
                     </span>
-                    {choice.status.toUpperCase() !== 'ACTIVE' ? (
-                      <span className="text-xs uppercase tracking-wide text-slate-400">
-                        {choice.status}
-                      </span>
-                    ) : null}
-                  </button>
-                </li>
+                    <span className="block text-xs text-slate-500">{choice.client_name}</span>
+                  </span>
+                  {choice.status.toUpperCase() !== 'ACTIVE' ? (
+                    <span className="chip">{choice.status}</span>
+                  ) : null}
+                </button>
               ))}
-            </ul>
-            <button
-              type="button"
-              onClick={() => setChoices(null)}
-              className="mt-4 text-xs font-medium text-slate-500 underline underline-offset-2"
-            >
+            </div>
+            <button type="button" onClick={() => setChoices(null)} className="btn btn-ghost" style={{ marginTop: '0.9rem' }}>
               Use a different login
             </button>
           </div>
         ) : (
-          <form
-            onSubmit={handleSubmit}
-            className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
-          >
-            <label className="block">
-              <span className="text-sm font-medium text-slate-700">
-                {isClient ? sideLabel : 'Username'}
-              </span>
-              <input
-                value={username}
-                onChange={(event) => setUsername(event.target.value)}
-                autoComplete="username"
-                required
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10"
-              />
-            </label>
+          <form onSubmit={handleSubmit} className="auth-panel">
+            <div className="auth-fields">
+              <label className="block">
+                <span className="field-label">{isClient ? sideLabel : 'Username'}</span>
+                <input
+                  value={username}
+                  onChange={(event) => setUsername(event.target.value)}
+                  autoComplete="username"
+                  required
+                  className="field-input"
+                />
+              </label>
 
-            <label className="block">
-              <span className="text-sm font-medium text-slate-700">Password</span>
-              <input
-                type="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                autoComplete="current-password"
-                required
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10"
-              />
-            </label>
+              <label className="block">
+                <span className="field-label">Password</span>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  autoComplete="current-password"
+                  required
+                  className="field-input"
+                />
+              </label>
 
-            {error ? (
-              <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
-                {error}
+              {error ? (
+                <p role="alert" className="auth-error">
+                  {error}
+                </p>
+              ) : null}
+
+              <button type="submit" disabled={pending} className="btn btn-primary btn-block">
+                {pending ? 'Signing in…' : 'Sign in'}
+              </button>
+
+              <p className="auth-foot">
+                Don't have an account? Contact your platform administrator.
               </p>
-            ) : null}
-
-            <button
-              type="submit"
-              disabled={pending}
-              className="w-full rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60"
-            >
-              {pending ? 'Signing in…' : 'Sign in'}
-            </button>
-
-            <p className="text-center text-sm text-slate-500">
-              Don't have an account? Contact your platform administrator.
-            </p>
+            </div>
           </form>
         )}
+
+        <p className="auth-foot">
+          <Link to="/about" className="text-link">
+            About this portal
+          </Link>
+        </p>
       </div>
     </main>
   )

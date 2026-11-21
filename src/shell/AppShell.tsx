@@ -3,6 +3,13 @@ import { appConfig } from '../config/app'
 import { useAuth } from '../auth/AuthContext'
 import clsx from 'clsx'
 
+const initials = appConfig.title
+  .split(/\s+/)
+  .map((word) => word[0])
+  .join('')
+  .slice(0, 2)
+  .toUpperCase()
+
 export function AppShell() {
   const { user, signOut, laundries, currentLaundry, switchLaundry } = useAuth()
   const scope = user?.clientName ?? user?.laundry
@@ -11,21 +18,26 @@ export function AppShell() {
   const canSwitch = laundries.length > 1
 
   return (
-    <div className="min-h-dvh bg-slate-50 text-slate-900">
-      <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/90 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold">{appConfig.title}</p>
-            {scope ? <p className="truncate text-xs text-slate-500">{scope}</p> : null}
+    <div className="app-shell">
+      <header className="app-header">
+        <div className="app-header-inner">
+          <div className="app-identity">
+            <span className="app-mark" aria-hidden="true">
+              {initials}
+            </span>
+            <div className="min-w-0">
+              <p className="app-title">{appConfig.title}</p>
+              {scope ? <p className="app-subtitle">{scope}</p> : null}
+            </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="app-header-actions">
             {canSwitch ? (
-              <label className="flex items-center gap-2">
+              <label>
                 <span className="sr-only">Laundry</span>
                 <select
                   value={currentLaundry ?? ''}
                   onChange={(event) => void switchLaundry(event.target.value)}
-                  className="max-w-[14rem] rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs font-medium text-slate-700"
+                  className="field-input select-input scope-select"
                 >
                   {laundries.map((item) => (
                     <option key={item.laundry_id} value={item.laundry_id}>
@@ -35,58 +47,46 @@ export function AppShell() {
                 </select>
               </label>
             ) : null}
-            <div className="text-right">
-              <p className="text-sm font-medium leading-tight">{user?.name}</p>
-              <p className="text-[11px] uppercase tracking-wide text-slate-500">{user?.role}</p>
+            <div className="hidden text-right sm:block">
+              <p style={{ margin: 0, fontSize: '0.8rem', fontWeight: 600, lineHeight: 1.2 }}>{user?.name}</p>
+              <p style={{ margin: 0, fontSize: '0.68rem', letterSpacing: '0.04em', textTransform: 'uppercase', color: 'var(--muted)' }}>
+                {user?.role}
+              </p>
             </div>
-            <button
-              onClick={signOut}
-              className="rounded-lg border border-slate-200 p-2 text-slate-600 transition hover:bg-slate-100"
-              aria-label="Sign out"
-            >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                <path d="m16 17 5-5-5-5" />
-                <path d="M21 12H9" />
-              </svg>
+            <button type="button" onClick={signOut} className="btn btn-secondary" aria-label="Sign out">
+              Sign out
             </button>
           </div>
         </div>
 
-        <nav className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-3 pb-2">
-          {appConfig.nav.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              end={item.path === '/'}
-              className={({ isActive }) =>
-                clsx(
-                  'whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition',
-                  isActive
-                    ? 'bg-slate-900 text-white'
-                    : 'text-slate-600 hover:bg-slate-200/70',
-                )
-              }
-            >
-              {item.label}
-            </NavLink>
-          ))}
+        <nav className="app-nav" aria-label="Main navigation">
+          <div className="app-nav-inner">
+            {appConfig.nav.map((item) => (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                end={item.path === '/'}
+                className={({ isActive }) => clsx('app-nav-link', isActive && 'is-active')}
+              >
+                {item.label}
+              </NavLink>
+            ))}
+          </div>
         </nav>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-6">
+      <main className="app-main">
         <Outlet />
       </main>
+
+      <footer className="app-footer">
+        <div className="app-footer-inner">
+          <span>Operations portal · Signed in as {user?.name ?? 'user'}</span>
+          <NavLink to="/about" className="text-link">
+            About this portal
+          </NavLink>
+        </div>
+      </footer>
     </div>
   )
 }

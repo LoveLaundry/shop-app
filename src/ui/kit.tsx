@@ -2,25 +2,25 @@ import type { ReactNode } from 'react'
 
 export function PageHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
-    <div className="mb-5">
-      <h1 className="text-xl font-semibold text-slate-900">{title}</h1>
-      {subtitle ? <p className="mt-1 text-sm text-slate-500">{subtitle}</p> : null}
+    <div className="page-header">
+      <h1 className="page-title">{title}</h1>
+      {subtitle ? <p className="page-subtitle">{subtitle}</p> : null}
     </div>
   )
 }
 
 export function Stat({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5">
-      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p>
-      <p className="mt-2 text-2xl font-semibold tabular-nums text-slate-900">{value}</p>
-      {hint ? <p className="mt-1 text-xs text-slate-500">{hint}</p> : null}
+    <div className="stat-card">
+      <p className="stat-label">{label}</p>
+      <p className="stat-value">{value}</p>
+      {hint ? <p className="stat-hint">{hint}</p> : null}
     </div>
   )
 }
 
 export function Panel({ children, className }: { children: ReactNode; className?: string }) {
-  return <div className={className ? `rounded-2xl border border-slate-200 bg-white ${className}` : "rounded-2xl border border-slate-200 bg-white p-5"}>{children}</div>
+  return <div className={className ? `panel panel-pad ${className}` : 'panel panel-pad'}>{children}</div>
 }
 
 export function StateBox({
@@ -38,74 +38,73 @@ export function StateBox({
 }) {
   if (loading) {
     return (
-      <Panel>
-        <p className="text-sm text-slate-500">Loading…</p>
-      </Panel>
+      <div className="state-box">
+        <p className="state-box-text">Loading…</p>
+      </div>
     )
   }
   if (error) {
     return (
-      <Panel>
-        <p className="text-sm text-red-700">{error}</p>
-        {onRetry ? (
-          <button
-            onClick={onRetry}
-            className="mt-3 rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium hover:bg-slate-50"
-          >
-            Try again
-          </button>
-        ) : null}
-      </Panel>
+      <div className="state-box">
+        <div>
+          <p className="state-box-text state-box-error">{error}</p>
+          {onRetry ? (
+            <button type="button" onClick={onRetry} className="btn btn-secondary" style={{ marginTop: '0.85rem' }}>
+              Try again
+            </button>
+          ) : null}
+        </div>
+      </div>
     )
   }
   if (empty) {
     return (
-      <Panel>
-        <p className="text-sm text-slate-500">Nothing here yet.</p>
-      </Panel>
+      <div className="state-box">
+        <p className="state-box-text">Nothing here yet.</p>
+      </div>
     )
   }
   return <>{children}</>
 }
 
 const STATUS_TONE: Record<string, string> = {
-  RECEIVED: 'bg-sky-50 text-sky-700 border-sky-200',
-  PROCESSING: 'bg-amber-50 text-amber-700 border-amber-200',
-  READY_FOR_DELIVERY: 'bg-violet-50 text-violet-700 border-violet-200',
-  PARTIALLY_DELIVERED: 'bg-orange-50 text-orange-700 border-orange-200',
-  DELIVERED: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  CANCELLED: 'bg-slate-100 text-slate-600 border-slate-200',
-  PAID: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  ISSUED: 'bg-sky-50 text-sky-700 border-sky-200',
-  PENDING: 'bg-amber-50 text-amber-700 border-amber-200',
-  PARTIALLY_PAID: 'bg-orange-50 text-orange-700 border-orange-200',
-  DRAFT: 'bg-slate-100 text-slate-600 border-slate-200',
+  RECEIVED: 'chip',
+  PROCESSING: 'chip chip-warning',
+  READY_FOR_DELIVERY: 'chip',
+  PARTIALLY_DELIVERED: 'chip chip-warning',
+  DELIVERED: 'chip chip-positive',
+  CANCELLED: 'chip',
+  PAID: 'chip chip-positive',
+  ISSUED: 'chip',
+  PENDING: 'chip chip-warning',
+  PARTIALLY_PAID: 'chip chip-warning',
+  DRAFT: 'chip',
+  APPROVED: 'chip chip-positive',
+  COMPLETED: 'chip chip-positive',
+  IN_TRANSIT: 'chip',
+  SCANNED: 'chip chip-positive',
+  DAMAGED: 'chip chip-danger',
+  MISSING: 'chip chip-danger',
 }
 
 export function StatusChip({ status }: { status: string | null | undefined }) {
   const value = (status ?? '').toUpperCase()
-  const tone = STATUS_TONE[value] ?? 'bg-slate-100 text-slate-600 border-slate-200'
-  return (
-    <span className={`inline-flex rounded-full border px-2 py-0.5 text-[11px] font-semibold ${tone}`}>
-      {value.replaceAll('_', ' ') || '—'}
-    </span>
-  )
+  const tone = STATUS_TONE[value] ?? 'chip'
+  return <span className={tone}>{value.replaceAll('_', ' ') || '—'}</span>
 }
 
 export function Table({ head, children }: { head: string[]; children: ReactNode }) {
   return (
-    <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
-      <table className="w-full min-w-[640px] text-left text-sm">
-        <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+    <div className="data-table-wrap panel">
+      <table className="data-table">
+        <thead>
           <tr>
             {head.map((label) => (
-              <th key={label} className="px-4 py-3 font-semibold">
-                {label}
-              </th>
+              <th key={label}>{label}</th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-100">{children}</tbody>
+        <tbody>{children}</tbody>
       </table>
     </div>
   )
