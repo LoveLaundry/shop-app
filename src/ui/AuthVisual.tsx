@@ -1,4 +1,4 @@
-import { ReceiptText, Shirt, Sparkles, Truck, WashingMachine } from 'lucide-react'
+import { CircleCheck, ReceiptText, Shirt, Truck, WashingMachine } from 'lucide-react'
 import { appConfig } from '../config/app'
 
 export function AuthVisual({
@@ -12,36 +12,40 @@ export function AuthVisual({
 
   return (
     <aside className="auth-visual" aria-hidden="true">
-      <span className="visual-pill">
-        <Sparkles />
-        Operations, in focus
-      </span>
-
-      <div className="visual-orbit">
-        <span className="visual-core">
+      <div className="visual-top">
+        <span className="visual-mark">
           <WashingMachine />
         </span>
-        <span className="visual-node node-a">
+        <div>
+          <p className="visual-kicker">{isShop ? 'Shop portal' : 'Hotel desk'}</p>
+          <p className="visual-title">Operations overview</p>
+        </div>
+      </div>
+
+      <div className="visual-checks">
+        <p className="visual-check">
+          <CircleCheck />
+          <span>{isShop ? 'Bills and balances kept in one place' : 'Gate passes and deliveries in one place'}</span>
+        </p>
+        <p className="visual-check">
           <ReceiptText />
-        </span>
-        <span className="visual-node node-b">
+          <span>{isShop ? 'Order history with each laundry' : 'Invoices with each laundry'}</span>
+        </p>
+        <p className="visual-check">
           <Truck />
-        </span>
-        <span className="visual-node node-c">
+          <span>Clear records for every handoff</span>
+        </p>
+        <p className="visual-check">
           <Shirt />
-        </span>
-        <span className="visual-node node-d">
-          <Sparkles />
-        </span>
+          <span>Linen and item counts you can trust</span>
+        </p>
       </div>
 
       <div className="visual-caption">
-        <h2>{title ?? (isShop ? 'Every order, bill and balance in view.' : 'Every handoff, tracked with confidence.')}</h2>
+        <h2>{title ?? 'A calmer way to run your laundry account.'}</h2>
         <p>
           {copy ??
-            (isShop
-              ? 'A calmer workspace for shop teams to follow what moves between their business and the laundry.'
-              : 'A calmer workspace for hotel teams to coordinate linens, gate passes and deliveries.')}
+            'A focused workspace for your team, with only the records that belong to your account.'}
         </p>
       </div>
     </aside>

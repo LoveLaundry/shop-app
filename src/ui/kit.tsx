@@ -2,9 +2,6 @@ import type { ReactNode } from 'react'
 import type { LucideIcon } from 'lucide-react'
 import {
   Activity,
-  ArrowUpRight,
-  CircleAlert,
-  CircleCheck,
   ClipboardList,
   FileText,
   Inbox,
@@ -60,15 +57,9 @@ export function Stat({ label, value, hint }: { label: string; value: string; hin
   const Icon = statIcon(label)
   return (
     <div className="stat-card">
-      <div className="stat-top">
-        <span className="stat-icon" aria-hidden="true">
-          <Icon />
-        </span>
-        <span className="stat-trend" aria-hidden="true">
-          <ArrowUpRight />
-          Live
-        </span>
-      </div>
+      <span className="stat-icon" aria-hidden="true">
+        <Icon />
+      </span>
       <p className="stat-label">{label}</p>
       <p className="stat-value">{value}</p>
       {hint ? <p className="stat-hint">{hint}</p> : null}
@@ -110,11 +101,11 @@ export function StateBox({
       <div className="state-box">
         <div>
           <span className="state-icon is-error" aria-hidden="true">
-            <CircleAlert />
+            <Activity />
           </span>
           <p className="state-box-text state-box-error">{error}</p>
           {onRetry ? (
-            <button type="button" onClick={onRetry} className="btn btn-secondary" style={{ marginTop: '0.85rem' }}>
+            <button type="button" onClick={onRetry} className="btn btn-secondary" style={{ marginTop: '0.8rem' }}>
               <RefreshCw />
               Try again
             </button>
@@ -138,36 +129,29 @@ export function StateBox({
   return <>{children}</>
 }
 
-const STATUS_TONE: Record<string, { className: string; icon: LucideIcon }> = {
-  RECEIVED: { className: 'chip', icon: Activity },
-  PROCESSING: { className: 'chip chip-warning', icon: LoaderCircle },
-  READY_FOR_DELIVERY: { className: 'chip', icon: Package },
-  PARTIALLY_DELIVERED: { className: 'chip chip-warning', icon: Truck },
-  DELIVERED: { className: 'chip chip-positive', icon: CircleCheck },
-  CANCELLED: { className: 'chip chip-danger', icon: CircleAlert },
-  PAID: { className: 'chip chip-positive', icon: CircleCheck },
-  ISSUED: { className: 'chip', icon: ReceiptText },
-  PENDING: { className: 'chip chip-warning', icon: LoaderCircle },
-  PARTIALLY_PAID: { className: 'chip chip-warning', icon: Wallet },
-  DRAFT: { className: 'chip', icon: FileText },
-  APPROVED: { className: 'chip chip-positive', icon: CircleCheck },
-  COMPLETED: { className: 'chip chip-positive', icon: CircleCheck },
-  IN_TRANSIT: { className: 'chip', icon: Truck },
-  SCANNED: { className: 'chip chip-positive', icon: CircleCheck },
-  DAMAGED: { className: 'chip chip-danger', icon: CircleAlert },
-  MISSING: { className: 'chip chip-danger', icon: CircleAlert },
+const STATUS_TONE: Record<string, string> = {
+  RECEIVED: 'chip',
+  PROCESSING: 'chip chip-warning',
+  READY_FOR_DELIVERY: 'chip',
+  PARTIALLY_DELIVERED: 'chip chip-warning',
+  DELIVERED: 'chip chip-positive',
+  CANCELLED: 'chip chip-danger',
+  PAID: 'chip chip-positive',
+  ISSUED: 'chip',
+  PENDING: 'chip chip-warning',
+  PARTIALLY_PAID: 'chip chip-warning',
+  DRAFT: 'chip',
+  APPROVED: 'chip chip-positive',
+  COMPLETED: 'chip chip-positive',
+  IN_TRANSIT: 'chip',
+  SCANNED: 'chip chip-positive',
+  DAMAGED: 'chip chip-danger',
+  MISSING: 'chip chip-danger',
 }
 
 export function StatusChip({ status }: { status: string | null | undefined }) {
   const value = (status ?? '').toUpperCase()
-  const tone = STATUS_TONE[value] ?? { className: 'chip', icon: Activity }
-  const Icon = tone.icon
-  return (
-    <span className={tone.className}>
-      <Icon aria-hidden="true" />
-      {value.replaceAll('_', ' ') || '—'}
-    </span>
-  )
+  return <span className={STATUS_TONE[value] ?? 'chip'}>{value.replaceAll('_', ' ') || '—'}</span>
 }
 
 export function Table({ head, children }: { head: string[]; children: ReactNode }) {

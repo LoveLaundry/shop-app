@@ -10,10 +10,14 @@ export function AboutPage() {
   return (
     <main className="about-layout">
       <div className="about-card">
-        <div className="about-banner" aria-hidden="true">
-          <span className="about-banner-icon">
+        <div className="about-banner">
+          <span className="about-banner-icon" aria-hidden="true">
             <WashingMachine />
           </span>
+          <div>
+            <h2>Built for daily laundry operations</h2>
+            <p>Scoped records, clear handoffs and a focused workspace.</p>
+          </div>
         </div>
 
         <div className="about-brand">
