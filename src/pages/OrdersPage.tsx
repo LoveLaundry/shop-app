@@ -1,7 +1,8 @@
-import { Link } from 'react-router-dom'
+import { useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import { Plus } from 'lucide-react'
 import { formatDate, useQuery } from '../api/hooks'
-import { PageHeader, StateBox, StatusChip, Table } from '../ui/kit'
+import { Notice, PageHeader, Pagination, StateBox, StatusChip, Table } from '../ui/kit'
 
 interface ShopOrder {
   id: string
@@ -18,19 +19,31 @@ interface Response {
   items: ShopOrder[]
 }
 
+const PAGE_SIZE = 50
+
 export function OrdersPage() {
-  const { data, error, loading, reload } = useQuery<Response>('/client-portal/shop/orders')
+  const location = useLocation()
+  const created = Boolean((location.state as { created?: boolean } | null)?.created)
+  const [page, setPage] = useState(0)
+  const { data, error, loading, reload } = useQuery<Response>('/client-portal/shop/orders', {
+    skip: page * PAGE_SIZE,
+    limit: PAGE_SIZE,
+  })
 
   return (
     <>
       <PageHeader title="Orders" subtitle="What you sent, and what the laundry has counted in" />
 
-      <div className="mb-4">
-        <Link
-          to="/orders/new"
-          className="inline-flex items-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
-        >
-          <Plus size={16} aria-hidden="true" />
+      {created ? (
+        <Notice tone="success" title="Order sent" action={<Link to="/orders" className="btn btn-ghost">Dismiss</Link>}>
+          Your order is with the laundry. It stays in draft until they confirm receipt.
+        </Notice>
+      ) : null}
+
+      <div className="panel panel-pad mb-4 flex flex-wrap items-center justify-between gap-3">
+        <p className="panel-note">Newest orders first. A draft becomes active once the laundry counts the pieces.</p>
+        <Link to="/orders/new" className="btn btn-primary">
+          <Plus />
           New order
         </Link>
       </div>
@@ -40,10 +53,12 @@ export function OrdersPage() {
         error={error}
         empty={!loading && !error && (data?.items.length ?? 0) === 0}
         onRetry={reload}
+        emptyTitle="No orders yet"
+        emptyDetail="Use New order to tell the laundry what you are sending."
       >
         <Table head={['Order', 'Raised', 'Items', 'Sent', 'Received', 'Status']}>
           {(data?.items ?? []).map((order) => (
-            <tr key={order.id} className="hover:bg-slate-50">
+            <tr key={order.id}>
               <td className="px-4 py-3 font-medium">{order.gate_pass_number}</td>
               <td className="px-4 py-3 text-slate-600">{formatDate(order.receiving_date)}</td>
               <td className="px-4 py-3 tabular-nums">{order.line_count}</td>
@@ -53,17 +68,17 @@ export function OrdersPage() {
               <td className="px-4 py-3 tabular-nums">
                 {order.status === 'DRAFT' ? '—' : order.received_pieces}
               </td>
-              <td className="px-4 py-3">
-                <StatusChip status={order.status} />
-              </td>
+              <td className="px-4 py-3"><StatusChip status={order.status} /></td>
             </tr>
           ))}
         </Table>
-        {data ? (
-          <p className="mt-3 text-xs text-slate-500">
-            Showing {data.items.length} of {data.total} orders.
-          </p>
-        ) : null}
+        <Pagination
+          page={page}
+          pageSize={PAGE_SIZE}
+          total={data?.total ?? 0}
+          onPage={setPage}
+          label="orders"
+        />
       </StateBox>
     </>
   )

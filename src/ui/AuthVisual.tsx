@@ -37,7 +37,7 @@ export function AuthVisual({
         </p>
         <p className="visual-check">
           <Shirt />
-          <span>Linen and item counts you can trust</span>
+          <span>{isShop ? 'Order and item counts you can trust' : 'Linen and item counts you can trust'}</span>
         </p>
       </div>
 

@@ -1,14 +1,12 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import type { LucideIcon } from 'lucide-react'
 import {
-  Activity,
   Building2,
   FileText,
   Info,
   LayoutDashboard,
   LogOut,
   Package,
-  PlusCircle,
   ReceiptText,
   Shirt,
   Ticket,
@@ -23,12 +21,20 @@ import clsx from 'clsx'
 const NAV_ICONS: Record<string, LucideIcon> = {
   '/': LayoutDashboard,
   '/orders': Package,
-  '/orders/new': PlusCircle,
-  '/bills': ReceiptText,
   '/gate-passes': Ticket,
   '/linens': Shirt,
   '/deliveries': Truck,
   '/invoices': FileText,
+  '/bills': ReceiptText,
+}
+
+/** HOTEL_ADMIN -> Hotel admin, SHOP_STAFF -> Shop staff. */
+function friendlyRole(role: string | undefined): string {
+  if (!role) return 'Account'
+  return role
+    .toLowerCase()
+    .replaceAll('_', ' ')
+    .replace(/\b\w/g, (letter) => letter.toUpperCase())
 }
 
 export function AppShell() {
@@ -51,7 +57,7 @@ export function AppShell() {
         <p className="sidebar-section">Workspace</p>
         <nav className="sidebar-nav" aria-label="Main navigation">
           {appConfig.nav.map((item) => {
-            const Icon = NAV_ICONS[item.path] ?? Activity
+            const Icon = NAV_ICONS[item.path] ?? LayoutDashboard
             return (
               <NavLink
                 key={item.path}
@@ -114,19 +120,15 @@ export function AppShell() {
                 </span>
                 <div className="user-meta">
                   <p className="user-name">{user?.name}</p>
-                  <p className="user-role">{user?.role}</p>
+                  <p className="user-role">{friendlyRole(user?.role)}</p>
                 </div>
               </div>
-
-              <button type="button" onClick={signOut} className="btn btn-secondary" aria-label="Sign out">
-                <LogOut />
-              </button>
             </div>
           </div>
 
           <nav className="mobile-nav" aria-label="Main navigation">
             {appConfig.nav.map((item) => {
-              const Icon = NAV_ICONS[item.path] ?? Activity
+              const Icon = NAV_ICONS[item.path] ?? LayoutDashboard
               return (
                 <NavLink
                   key={item.path}
@@ -139,10 +141,17 @@ export function AppShell() {
                 </NavLink>
               )
             })}
-            <NavLink to="/about" className="mobile-nav-link">
+            <NavLink
+              to="/about"
+              className={({ isActive }) => clsx('mobile-nav-link', isActive && 'is-active')}
+            >
               <Info aria-hidden="true" />
               About
             </NavLink>
+            <button type="button" onClick={signOut} className="mobile-nav-link">
+              <LogOut aria-hidden="true" />
+              Sign out
+            </button>
           </nav>
         </header>
 
@@ -152,7 +161,7 @@ export function AppShell() {
 
         <footer className="app-footer">
           <div className="app-footer-inner">
-            <span>Operations portal · Signed in as {user?.name ?? 'user'}</span>
+            <span>Account portal · Signed in as {user?.name ?? 'user'}</span>
             <NavLink to="/about" className="text-link">
               <Info aria-hidden="true" />
               About this portal

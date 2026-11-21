@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+import { ArrowRight, ReceiptText, Package } from 'lucide-react'
 import { formatMoney, useQuery } from '../api/hooks'
 import { PageHeader, Stat, StateBox } from '../ui/kit'
 
@@ -21,7 +23,14 @@ export function TodayPage() {
         subtitle="Your account with this laundry — only this laundry's records are visible"
       />
 
-      <StateBox loading={loading} error={error} onRetry={reload}>
+      <StateBox
+        loading={loading}
+        error={error}
+        empty={!loading && !error && !data}
+        onRetry={reload}
+        emptyTitle="Account summary is unavailable"
+        emptyDetail="Your provider has not published a summary for this account yet."
+      >
         {data ? (
           <div className="grid gap-3 sm:grid-cols-3">
             <Stat
@@ -42,6 +51,29 @@ export function TodayPage() {
           </div>
         ) : null}
       </StateBox>
+
+      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+        <Link to="/bills" className="panel panel-pad quick-link flex items-center justify-between gap-3">
+          <span className="flex items-center gap-3">
+            <ReceiptText className="text-accent" aria-hidden="true" />
+            <span>
+              <span className="block font-semibold">Review bills</span>
+              <span className="block text-xs text-slate-500">Line items, payments and balances</span>
+            </span>
+          </span>
+          <ArrowRight size={15} aria-hidden="true" />
+        </Link>
+        <Link to="/orders" className="panel panel-pad quick-link flex items-center justify-between gap-3">
+          <span className="flex items-center gap-3">
+            <Package className="text-accent" aria-hidden="true" />
+            <span>
+              <span className="block font-semibold">Track orders</span>
+              <span className="block text-xs text-slate-500">What you sent and what was received</span>
+            </span>
+          </span>
+          <ArrowRight size={15} aria-hidden="true" />
+        </Link>
+      </div>
     </>
   )
 }

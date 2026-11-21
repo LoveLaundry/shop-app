@@ -1,7 +1,8 @@
 import { useState } from 'react'
+import { X } from 'lucide-react'
 import { dataApi, errorMessage } from '../api/client'
 import { formatDate, formatMoney, useQuery } from '../api/hooks'
-import { PageHeader, Panel, StateBox, StatusChip, Table } from '../ui/kit'
+import { Notice, PageHeader, Pagination, Panel, StateBox, StatusChip, Table } from '../ui/kit'
 
 interface ShopBill {
   id: string
@@ -34,18 +35,25 @@ interface Response {
 }
 
 const PAGE_SIZE = 25
+const STATUSES = ['PENDING', 'ISSUED', 'PARTIALLY_PAID', 'PAID', 'CANCELLED']
 
 export function BillsPage() {
-  const [skip, setSkip] = useState(0)
+  const [page, setPage] = useState(0)
+  const [paymentStatus, setPaymentStatus] = useState('')
   const [detail, setDetail] = useState<BillDetail | null>(null)
   const [detailError, setDetailError] = useState<string | null>(null)
+  const [openingId, setOpeningId] = useState<string | null>(null)
 
+  // This endpoint names its page cursor `offset` (not `skip`). Sending the
+  // wrong key silently pinned every page to the first 25 bills.
   const { data, error, loading, reload } = useQuery<Response>('/client-portal/shop/bills', {
-    skip,
+    offset: page * PAGE_SIZE,
     limit: PAGE_SIZE,
+    status: paymentStatus || undefined,
   })
 
   async function open(bill: ShopBill) {
+    setOpeningId(bill.id)
     setDetailError(null)
     try {
       const { data: full } = await dataApi.get<BillDetail>(`/client-portal/shop/bills/${bill.id}`)
@@ -53,59 +61,92 @@ export function BillsPage() {
     } catch (caught) {
       setDetail(null)
       setDetailError(errorMessage(caught))
+    } finally {
+      setOpeningId(null)
     }
   }
-
-  const total = data?.total ?? 0
 
   return (
     <>
       <PageHeader title="Bills" subtitle="Invoices raised by the laundry for this shop" />
+
+      <div className="panel panel-pad mb-4">
+        <label className="block max-w-xs">
+          <span className="field-label">Filter by payment status</span>
+          <select
+            className="field-input select-input"
+            value={paymentStatus}
+            onChange={(event) => {
+              setPaymentStatus(event.target.value)
+              setPage(0)
+            }}
+            aria-label="Filter bills by payment status"
+          >
+            <option value="">All statuses</option>
+            {STATUSES.map((value) => (
+              <option key={value} value={value}>{value.replaceAll('_', ' ')}</option>
+            ))}
+          </select>
+        </label>
+      </div>
 
       <StateBox
         loading={loading}
         error={error}
         empty={!loading && !error && (data?.items.length ?? 0) === 0}
         onRetry={reload}
+        emptyTitle={paymentStatus ? 'No bills with that status' : 'No bills yet'}
+        emptyDetail={paymentStatus ? 'Choose a different status to see more records.' : 'Invoices raised by your provider will appear here.'}
       >
         <Table head={['Bill', 'Raised', 'Total', 'Paid', 'Balance', 'Status', '']}>
           {(data?.items ?? []).map((bill) => (
-            <tr key={bill.id} className="hover:bg-slate-50">
+            <tr key={bill.id}>
               <td className="px-4 py-3 font-medium">{bill.bill_number ?? '—'}</td>
               <td className="px-4 py-3 text-slate-600">{formatDate(bill.created_at)}</td>
               <td className="px-4 py-3 tabular-nums">{formatMoney(bill.grand_total)}</td>
               <td className="px-4 py-3 tabular-nums">{formatMoney(bill.paid_amount)}</td>
               <td className="px-4 py-3 tabular-nums">{formatMoney(bill.balance)}</td>
-              <td className="px-4 py-3">
-                <StatusChip status={bill.payment_status} />
-              </td>
-              <td className="px-4 py-3">
+              <td className="px-4 py-3"><StatusChip status={bill.payment_status} /></td>
+              <td className="px-4 py-3 text-right">
                 <button
+                  type="button"
                   onClick={() => void open(bill)}
-                  className="text-sm font-medium text-slate-700 underline"
+                  disabled={openingId === bill.id}
+                  className="btn btn-secondary"
+                  aria-label={`View bill ${bill.bill_number ?? bill.id}`}
                 >
-                  View
+                  {openingId === bill.id ? 'Opening…' : 'View'}
                 </button>
               </td>
             </tr>
           ))}
         </Table>
+        <Pagination
+          page={page}
+          pageSize={PAGE_SIZE}
+          total={data?.total ?? 0}
+          onPage={setPage}
+          label="bills"
+        />
       </StateBox>
 
       {detailError ? (
-        <p role="alert" className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
-          {detailError}
-        </p>
+        <div className="mt-4">
+          <Notice tone="danger" title="Bill detail could not be loaded">
+            {detailError}
+          </Notice>
+        </div>
       ) : null}
 
       {detail ? (
         <Panel className="mt-5">
-          <div className="mb-3 flex items-start justify-between">
+          <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-wide text-slate-400">Bill</p>
               <p className="text-lg font-semibold text-slate-900">{detail.bill_number ?? '—'}</p>
             </div>
-            <button onClick={() => setDetail(null)} className="text-sm text-slate-500 underline">
+            <button type="button" onClick={() => setDetail(null)} className="btn btn-secondary" aria-label="Close bill detail">
+              <X />
               Close
             </button>
           </div>
@@ -128,7 +169,7 @@ export function BillsPage() {
           {(detail.items?.length ?? 0) > 0 ? (
             <Table head={['Item', 'Qty', 'Unit price', 'Amount']}>
               {(detail.items ?? []).map((line, index) => (
-                <tr key={index}>
+                <tr key={`${line.item_name ?? 'line'}-${index}`}>
                   <td className="px-4 py-3">{line.item_name ?? '—'}</td>
                   <td className="px-4 py-3 tabular-nums">{line.quantity ?? ''}</td>
                   <td className="px-4 py-3 tabular-nums">
@@ -147,28 +188,6 @@ export function BillsPage() {
           {detail.notes ? <p className="mt-3 text-sm text-slate-600">{detail.notes}</p> : null}
         </Panel>
       ) : null}
-
-      <div className="mt-4 flex items-center justify-between text-sm text-slate-500">
-        <span>
-          {total} bill{total === 1 ? '' : 's'}
-        </span>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setSkip((s) => Math.max(0, s - PAGE_SIZE))}
-            disabled={skip === 0}
-            className="rounded-lg border border-slate-200 px-3 py-1 disabled:opacity-40"
-          >
-            Previous
-          </button>
-          <button
-            onClick={() => setSkip((s) => s + PAGE_SIZE)}
-            disabled={skip + PAGE_SIZE >= total}
-            className="rounded-lg border border-slate-200 px-3 py-1 disabled:opacity-40"
-          >
-            Next
-          </button>
-        </div>
-      </div>
     </>
   )
 }

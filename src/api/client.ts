@@ -42,10 +42,16 @@ for (const instance of [authApi, dataApi]) {
   )
 }
 
+/** HTTP status for an API error, when the server answered at all. */
+export function errorStatus(error: unknown): number | undefined {
+  return axios.isAxiosError(error) ? error.response?.status : undefined
+}
+
 export function errorMessage(error: unknown): string {
   if (axios.isAxiosError(error)) {
     const detail = (error.response?.data as { detail?: unknown } | undefined)?.detail
     if (typeof detail === 'string' && detail.trim()) return detail
+    if (error.response?.status === 404) return 'The requested information is not available yet.'
     if (error.code === 'ECONNABORTED') return 'The server took too long to respond. Try again.'
     if (!error.response) return 'Cannot reach the server. Check your connection.'
   }

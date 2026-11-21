@@ -2,9 +2,12 @@ import type { ReactNode } from 'react'
 import type { LucideIcon } from 'lucide-react'
 import {
   Activity,
+  CircleAlert,
+  CircleCheck,
   ClipboardList,
   FileText,
   Inbox,
+  Info,
   LayoutDashboard,
   LoaderCircle,
   Package,
@@ -76,17 +79,21 @@ export function StateBox({
   error,
   empty,
   onRetry,
+  emptyTitle = 'Nothing here yet.',
+  emptyDetail,
   children,
 }: {
   loading: boolean
   error: string | null
   empty?: boolean
   onRetry?: () => void
+  emptyTitle?: string
+  emptyDetail?: string
   children: ReactNode
 }) {
   if (loading) {
     return (
-      <div className="state-box">
+      <div className="state-box" role="status">
         <div>
           <span className="state-icon is-loading" aria-hidden="true">
             <LoaderCircle />
@@ -98,10 +105,10 @@ export function StateBox({
   }
   if (error) {
     return (
-      <div className="state-box">
+      <div className="state-box" role="alert">
         <div>
           <span className="state-icon is-error" aria-hidden="true">
-            <Activity />
+            <CircleAlert />
           </span>
           <p className="state-box-text state-box-error">{error}</p>
           {onRetry ? (
@@ -121,12 +128,95 @@ export function StateBox({
           <span className="state-icon" aria-hidden="true">
             <Inbox />
           </span>
-          <p className="state-box-text">Nothing here yet.</p>
+          <p className="state-box-text">{emptyTitle}</p>
+          {emptyDetail ? <p className="state-box-detail">{emptyDetail}</p> : null}
         </div>
       </div>
     )
   }
   return <>{children}</>
+}
+
+const NOTICE_ICONS: Record<string, LucideIcon> = {
+  info: Info,
+  success: CircleCheck,
+  warning: Activity,
+  danger: CircleAlert,
+}
+
+/** A short, scoped message that sits inline with page content. */
+export function Notice({
+  tone = 'info',
+  title,
+  action,
+  children,
+}: {
+  tone?: 'info' | 'success' | 'warning' | 'danger'
+  title: string
+  action?: ReactNode
+  children: ReactNode
+}) {
+  const Icon = NOTICE_ICONS[tone]
+  return (
+    <div className={`notice notice--${tone}`} role={tone === 'danger' ? 'alert' : undefined}>
+      <Icon aria-hidden="true" />
+      <div>
+        <strong>{title}</strong>
+        <p>{children}</p>
+        {action ? <div className="notice-action">{action}</div> : null}
+      </div>
+    </div>
+  )
+}
+
+/** Consistent range label + prev/next controls for list screens. */
+export function Pagination({
+  page,
+  pageSize,
+  total,
+  onPage,
+  label = 'records',
+}: {
+  page: number
+  pageSize: number
+  total: number
+  onPage: (page: number) => void
+  label?: string
+}) {
+  const pageCount = Math.ceil(total / pageSize)
+  if (pageCount <= 1) return null
+  const start = total === 0 ? 0 : page * pageSize + 1
+  const end = Math.min(total, (page + 1) * pageSize)
+  return (
+    <div className="pagination">
+      <span>
+        Showing {start}–{end} of {total} {label}
+      </span>
+      <div className="pagination-actions">
+        <button
+          type="button"
+          className="btn btn-secondary"
+          onClick={() => onPage(page - 1)}
+          disabled={page === 0}
+          aria-label="Previous page"
+        >
+          Previous
+        </button>
+        <span className="pagination-count">
+          {page + 1} / {pageCount}
+        </span>
+        <button
+          type="button"
+          className="btn btn-secondary"
+          onClick={() => onPage(page + 1)}
+          disabled={page + 1 >= pageCount}
+          aria-label="Next page"
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  )
 }
 
 const STATUS_TONE: Record<string, string> = {

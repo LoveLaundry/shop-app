@@ -30,6 +30,12 @@ export const appConfig = {
       "label": "Bills",
       "endpoint": "GET /client-portal/shop/bills",
       "blurb": "Every bill this shop has with the current laundry."
+    },
+    {
+      "path": "/orders",
+      "label": "Orders",
+      "endpoint": "GET /client-portal/shop/orders",
+      "blurb": "Orders you raised and what the laundry counted in."
     }
   ] as NavItem[],
 }

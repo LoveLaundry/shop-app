@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { dataApi, errorMessage } from './client'
+import { dataApi, errorStatus, errorMessage } from './client'
 
 type Params = Record<string, string | number | undefined>
 
 interface QueryResult<T> {
   data: T | null
   error: string | null
+  /** HTTP status of the failed request, so screens can explain 404s properly. */
+  status?: number
   loading: boolean
   reload: () => void
 }
@@ -13,13 +15,15 @@ interface QueryResult<T> {
 /**
  * Minimal GET hook.
  *
- * Deliberately not react-query: three screens do not justify the dependency,
- * and this keeps the refresh semantics obvious. The request key is serialised
- * so a fresh object literal on every render does not refetch in a loop.
+ * Deliberately not react-query: a handful of screens do not justify the
+ * dependency, and this keeps the refresh semantics obvious. The request key is
+ * serialised so a fresh object literal on every render does not refetch in a
+ * loop.
  */
 export function useQuery<T>(path: string, params?: Params): QueryResult<T> {
   const [data, setData] = useState<T | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [status, setStatus] = useState<number | undefined>(undefined)
   const [loading, setLoading] = useState(true)
 
   const key = useMemo(() => JSON.stringify(params ?? {}), [params])
@@ -29,6 +33,7 @@ export function useQuery<T>(path: string, params?: Params): QueryResult<T> {
   const load = useCallback(async () => {
     setLoading(true)
     setError(null)
+    setStatus(undefined)
     try {
       const response = await dataApi.get<T>(pathRef.current, {
         params: JSON.parse(key) as Params,
@@ -36,6 +41,7 @@ export function useQuery<T>(path: string, params?: Params): QueryResult<T> {
       setData(response.data)
     } catch (caught) {
       setError(errorMessage(caught))
+      setStatus(errorStatus(caught))
     } finally {
       setLoading(false)
     }
@@ -45,7 +51,7 @@ export function useQuery<T>(path: string, params?: Params): QueryResult<T> {
     void load()
   }, [load])
 
-  return { data, error, loading, reload: () => void load() }
+  return { data, error, status, loading, reload: () => void load() }
 }
 
 export function formatMoney(value: number | string | null | undefined, currency = 'LKR'): string {
