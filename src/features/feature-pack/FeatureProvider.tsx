@@ -359,7 +359,7 @@ export function FeatureProvider({ children }: { children: ReactNode }) {
 
       <CommandPalette open={commandOpen} onClose={() => setCommandOpen(false)} actions={commandActions} />
       <ShortcutHelpDialog open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
-      <Dialog open={featuresOpen} title="Feature guide" onClose={() => setFeaturesOpen(false)} wide>
+      <Dialog open={featuresOpen} title="Feature guide" onClose={() => setFeaturesOpen(false)} wide className="fp-guide-dialog">
         <FeaturePanel onToast={toast} />
       </Dialog>
 

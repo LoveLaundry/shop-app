@@ -23,7 +23,7 @@ export function FeaturePanel({ onToast }: { onToast?: (message: string) => void 
 
   return (
     <div className="fp-manifest">
-      <div className="fp-manifest-tools">
+      <div className="fp-manifest-tools fp-guide-filters">
         <label className="fp-search" htmlFor="fp-feature-search">
           <span className="sr-only">Search features</span>
           <Search aria-hidden="true" />

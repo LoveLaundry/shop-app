@@ -165,8 +165,8 @@ export function AppShell() {
         <header className={clsx('app-topbar', scrolled && 'fp-scrolled')}>
           <div className="topbar-main">
             <div className="topbar-title">
-              <h1>{appConfig.title}</h1>
-              <p className="topbar-subtitle">{scope ?? appConfig.tagline}</p>
+              <h1 title={appConfig.title}>{appConfig.title}</h1>
+              <p className="topbar-subtitle" title={scope ?? appConfig.tagline}>{scope ?? appConfig.tagline}</p>
             </div>
 
             <div className="topbar-actions">
@@ -198,11 +198,11 @@ export function AppShell() {
               ) : null}
 
               <NotificationBell count={notifications.length} onClick={openNotifications} />
-              <IconButton label="Open command palette (Ctrl+K)" icon={Search} onClick={openCommandPalette} />
-              <IconButton label="Keyboard shortcuts" icon={Keyboard} onClick={openShortcuts} />
-              <IconButton label="Feature guide" icon={LayoutDashboard} onClick={openFeatures} />
-              <IconButton label={highContrast ? 'Turn off high contrast' : 'Turn on high contrast'} icon={Contrast} active={highContrast} onClick={toggleHighContrast} />
-              <IconButton label={largeText ? 'Use normal text size' : 'Use larger text'} icon={Type} active={largeText} onClick={toggleLargeText} />
+              <IconButton label="Open command palette (Ctrl+K)" icon={Search} onClick={openCommandPalette} className="fp-topbar-utility" />
+              <IconButton label="Keyboard shortcuts" icon={Keyboard} onClick={openShortcuts} className="fp-topbar-utility" />
+              <IconButton label="Feature guide" icon={LayoutDashboard} onClick={openFeatures} className="fp-topbar-utility" />
+              <IconButton label={highContrast ? 'Turn off high contrast' : 'Turn on high contrast'} icon={Contrast} active={highContrast} onClick={toggleHighContrast} className="fp-topbar-utility" />
+              <IconButton label={largeText ? 'Use normal text size' : 'Use larger text'} icon={Type} active={largeText} onClick={toggleLargeText} className="fp-topbar-utility" />
               <IconButton label="Open navigation menu" icon={Menu} onClick={() => setDrawerOpen(true)} className="fp-menu-trigger" />
 
               <div className="app-user">
@@ -276,8 +276,37 @@ export function AppShell() {
             About this portal
           </NavLink>
         </nav>
+        {/* Mobile counterpart of the topbar utilities hidden below 640px. */}
+        <p className="fp-drawer-section">Workspace controls</p>
         <div className="fp-drawer-actions">
-          <button type="button" className="btn btn-secondary" onClick={openShortcuts}>Shortcuts</button>
+          <button type="button" className="btn btn-secondary" onClick={openCommandPalette}><Search aria-hidden="true" /> Command palette</button>
+          <button type="button" className="btn btn-secondary" onClick={openShortcuts}><Keyboard aria-hidden="true" /> Shortcuts</button>
+          <button type="button" className="btn btn-secondary" onClick={openFeatures}><LayoutDashboard aria-hidden="true" /> Feature guide</button>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            aria-pressed={highContrast}
+            onClick={toggleHighContrast}
+          >
+            <Contrast aria-hidden="true" /> {highContrast ? 'Normal contrast' : 'High contrast'}
+          </button>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            aria-pressed={largeText}
+            onClick={toggleLargeText}
+          >
+            <Type aria-hidden="true" /> {largeText ? 'Normal text' : 'Large text'}
+          </button>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            aria-pressed={collapsed}
+            onClick={() => setCollapsed((value) => !value)}
+          >
+            {collapsed ? <PanelLeftOpen aria-hidden="true" /> : <PanelLeftClose aria-hidden="true" />}
+            {collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          </button>
           <button type="button" className="btn btn-secondary" onClick={safeSignOut}><LogOut aria-hidden="true" /> Sign out</button>
         </div>
       </Drawer>

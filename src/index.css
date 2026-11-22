@@ -2186,3 +2186,389 @@ button.hover\:border-slate-900:hover { border-color: var(--brand) !important; }
   .fp-manifest-list { max-height: none; }
   .fp-status-chip { bottom: 4.5rem; }
 }
+
+/* ==========================================================================
+   Responsive + readability hardening (final layer)
+   --------------------------------------------------------------------------
+   Kept last on purpose: it tightens the 375px layout and sets a hard 12px
+   floor for every visible label, badge, hint, code path and table copy. The
+   original tokens, restrained styling and brand remain untouched; this only
+   makes the existing UI fit a phone and stay legible. Utility buttons that
+   are pulled out of the topbar are exposed in the mobile drawer instead.
+   ========================================================================== */
+
+/* --- Readability: 13px for body/labels, 14px for titles, 12px hard floor - */
+.sidebar-section,
+.sidebar-title,
+.sidebar-link,
+.topbar-subtitle,
+.scope-select,
+.user-name,
+.user-role,
+.app-footer-inner,
+.btn,
+.field-label,
+.field-input,
+.page-subtitle,
+.panel-note,
+.stat-label,
+.stat-hint,
+.state-box-text,
+.state-box-detail,
+.chip,
+.data-table th,
+.data-table td,
+.notice,
+.pagination,
+.pagination-actions .btn,
+.visual-kicker,
+.visual-title,
+.auth-kicker,
+.auth-subtitle,
+.auth-foot,
+.about-meta dt,
+.about-meta dd,
+.about-role,
+.about-copy,
+.fp-skip-link,
+.fp-scope-badge,
+.fp-scope-type,
+.fp-updated,
+.fp-status-chip,
+.fp-expiry,
+.fp-expiry .btn,
+.fp-dialog-copy,
+.fp-shortcuts dd,
+.fp-shortcuts kbd,
+.fp-field-error,
+.fp-field-hint,
+.fp-strength-label,
+.fp-strength-hint,
+.fp-counter,
+.fp-error-summary,
+.fp-autosave,
+.fp-collapsible-trigger,
+.fp-steps li,
+.fp-inline-error,
+.fp-inline-error .btn,
+.fp-table-toolbar,
+.fp-search .field-input,
+.fp-toolbar-field select,
+.fp-date-range input,
+.fp-page-size select,
+.fp-menu-item,
+.fp-bulk-bar,
+.fp-bulk-bar .btn,
+.fp-skip-pagination,
+.fp-pagination,
+.fp-table-state p,
+.fp-table-state small,
+.fp-card-row,
+.fp-card-row > span:first-child,
+.fp-manifest-count,
+.fp-manifest-number,
+.fp-manifest-item p,
+.fp-manifest-item code,
+.fp-manifest-empty,
+.fp-login-meta,
+.fp-signin-note,
+.fp-detail-subtitle,
+.fp-detail-grid span,
+.fp-detail-notes,
+.fp-muted,
+.fp-pending-row,
+.fp-pending-row .btn,
+.fp-toast,
+.fp-toast-action,
+.fp-palette-item small,
+.fp-palette-empty,
+.fp-notification-list strong,
+.fp-notification-list p,
+.fp-help,
+.about-mark {
+  font-size: 0.8125rem !important;
+}
+
+/* Compact counters/icons still clear the 12px floor. */
+.fp-bell-count,
+.fp-steps li > span {
+  font-size: 0.75rem !important;
+}
+
+/* Titles keep their hierarchy but never fall below 14px. */
+.panel-title,
+.fp-manifest-heading strong,
+.fp-detail-grid strong,
+.fp-dialog-head h2 {
+  font-size: 0.875rem !important;
+}
+
+/* --- Wrapping: long scope/client names, paths, IDs and money/linen codes --- */
+:is(h1, h2, h3, p, span, strong, small, code, kbd, dd, dt, li, label, button, a, td, th, option) {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.topbar-title h1,
+.topbar-subtitle,
+.page-title,
+.page-subtitle,
+.panel-head,
+.panel-title,
+.fp-dialog-head h2,
+.sidebar-title {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+}
+
+/* Flex/grid children must be able to shrink before they wrap. */
+.topbar-main > *,
+.topbar-actions > *,
+.panel-head > *,
+.fp-dialog-head > *,
+.fp-dialog-foot > *,
+.fp-card-head > *,
+.fp-card-row > *,
+.fp-detail-grid > *,
+.fp-drawer-actions > *,
+.fp-guide-filters > *,
+.fp-table-toolbar > * {
+  min-width: 0;
+}
+
+.chip {
+  white-space: normal;
+}
+
+.fp-scope-name {
+  min-width: 0;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* --- <=640px: fit the whole shell inside a phone viewport ---------------- */
+@media (max-width: 640px) {
+  .app-shell,
+  .app-content,
+  .app-topbar {
+    max-width: 100%;
+  }
+
+  .topbar-main {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0.55rem 0.5rem;
+  }
+
+  .topbar-title {
+    flex: 1 1 100%;
+  }
+
+  .topbar-actions {
+    flex: 1 1 100%;
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 0.4rem;
+  }
+
+  /* Hidden from the cramped topbar; all of these live in the mobile drawer. */
+  .fp-topbar-utility,
+  .sidebar-collapse {
+    display: none !important;
+  }
+
+  .select-wrap,
+  .scope-select,
+  .fp-scope-badge {
+    max-width: min(15rem, 42vw);
+  }
+
+  .app-user {
+    margin-left: auto;
+  }
+
+  .form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .form-grid > * {
+    grid-column: 1 / -1 !important;
+  }
+
+  .fp-detail-grid,
+  .fp-table-toolbar,
+  .fp-guide-filters,
+  .fp-manifest-tools {
+    grid-template-columns: minmax(0, 1fr);
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .fp-table-toolbar > *,
+  .fp-guide-filters > * {
+    width: 100%;
+  }
+
+  .fp-date-range,
+  .fp-export-group,
+  .fp-row-actions {
+    flex-wrap: wrap;
+  }
+
+  .fp-dialog,
+  .fp-guide-dialog,
+  .fp-palette {
+    width: min(100%, calc(100vw - 1.5rem));
+    max-height: min(88dvh, 52rem);
+  }
+
+  .fp-overlay-drawer {
+    padding: 0.75rem;
+  }
+
+  .fp-drawer {
+    width: min(100%, calc(100vw - 1.5rem));
+    height: auto;
+    min-height: min(88dvh, 44rem);
+    max-height: calc(100dvh - 1.5rem);
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+  }
+
+  .fp-dialog-body,
+  .fp-drawer-body,
+  .fp-palette-list {
+    max-height: min(70dvh, 40rem);
+    overflow-y: auto;
+  }
+
+  .fp-toasts {
+    right: 0.75rem;
+    bottom: 0.75rem;
+    width: min(24rem, calc(100vw - 1.5rem));
+    max-height: 70dvh;
+    overflow-y: auto;
+  }
+
+  .mobile-nav {
+    display: flex;
+    width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .page-header,
+  .fp-card-head,
+  .fp-card-row {
+    flex-wrap: wrap;
+  }
+
+  .fp-drawer-section {
+    margin: 1rem 0 0.35rem;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--text-muted);
+  }
+
+  .fp-drawer-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .fp-drawer-actions .btn {
+    min-width: 0;
+    padding-inline: 0.5rem;
+    text-align: center;
+    white-space: normal;
+  }
+
+  .auth-layout,
+  .about-layout {
+    padding: 1rem 0.75rem;
+  }
+
+  .about-banner {
+    aspect-ratio: auto;
+    min-height: 7rem;
+  }
+}
+
+/* --- <=375px: final tightening pass ------------------------------------- */
+@media (max-width: 375px) {
+  .topbar-main,
+  .app-main,
+  .app-footer-inner,
+  .mobile-nav {
+    padding-inline: 0.65rem;
+  }
+
+  .topbar-main {
+    gap: 0.4rem;
+  }
+
+  .topbar-actions {
+    gap: 0.35rem;
+  }
+
+  .select-wrap,
+  .scope-select,
+  .fp-scope-badge {
+    max-width: min(14rem, 42vw);
+  }
+
+  .fp-icon-btn {
+    width: 30px;
+  }
+
+  .app-avatar {
+    width: 28px;
+  }
+
+  .page-header {
+    gap: 0.5rem;
+  }
+
+  .page-icon {
+    width: 34px;
+  }
+
+  .btn {
+    min-height: 34px;
+    padding: 0.4rem 0.6rem;
+  }
+
+  .panel-pad,
+  .auth-panel,
+  .fp-card,
+  .fp-dialog-body,
+  .fp-drawer-body,
+  .fp-dialog-head,
+  .fp-dialog-foot {
+    padding: 0.7rem;
+  }
+
+  .fp-manifest-item {
+    gap: 0.5rem;
+    padding: 0.5rem;
+  }
+
+  .fp-drawer-actions {
+    gap: 0.35rem;
+  }
+}
+
+/* Comfortable touch targets at phone widths, independent of pointer type. */
+@media (max-width: 767px) {
+  :root body :where(button, a, select, [role='button']):not(.sr-only):not(.sr-only *) {
+    min-height: 40px;
+  }
+  :root body :where(button, [role='button']):not(.sr-only):not(.sr-only *) {
+    min-width: 40px;
+  }
+}

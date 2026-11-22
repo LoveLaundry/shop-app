@@ -135,9 +135,9 @@ export function ScopeBadge({
   clientType?: string
 }) {
   return (
-    <span className="fp-scope-badge" title="Active account scope">
+    <span className="fp-scope-badge" title={`Active account scope: ${scope || 'Account'}`}>
       <Check aria-hidden="true" />
-      <span className="fp-scope-name">{truncate(scope || 'Account', 28)}</span>
+      <span className="fp-scope-name">{scope || 'Account'}</span>
       <span className="fp-scope-type">{clientType}</span>
       {role ? <span className="sr-only">Role: {role}</span> : null}
     </span>
@@ -191,6 +191,7 @@ export function Dialog({
   children,
   footer,
   wide = false,
+  className = '',
 }: {
   open: boolean
   title: string
@@ -198,6 +199,7 @@ export function Dialog({
   children: ReactNode
   footer?: ReactNode
   wide?: boolean
+  className?: string
 }) {
   const ref = useFocusTrap<HTMLDivElement>(open, onClose)
   useDialogBodyLock(open)
@@ -206,7 +208,7 @@ export function Dialog({
     <div className="fp-overlay" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
       <div
         ref={ref}
-        className={wide ? 'fp-dialog fp-dialog-wide' : 'fp-dialog'}
+        className={[wide ? 'fp-dialog fp-dialog-wide' : 'fp-dialog', className].filter(Boolean).join(' ')}
         role="dialog"
         aria-modal="true"
         aria-label={title}
