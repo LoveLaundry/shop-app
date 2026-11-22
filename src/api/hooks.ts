@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { dataApi, errorStatus, errorMessage } from './client'
 
 type Params = Record<string, string | number | undefined>
@@ -26,18 +26,18 @@ export function useQuery<T>(path: string, params?: Params): QueryResult<T> {
   const [status, setStatus] = useState<number | undefined>(undefined)
   const [loading, setLoading] = useState(true)
 
-  const key = useMemo(() => JSON.stringify(params ?? {}), [params])
-  const pathRef = useRef(path)
-  pathRef.current = path
+  // The path belongs in the request key too. A panel can ask for a different
+  // resource with the same params (for example, another bill's detail view);
+  // keying on params alone reused the previous response under a new heading.
+  const key = useMemo(() => JSON.stringify({ path, params: params ?? {} }), [path, params])
 
   const load = useCallback(async () => {
     setLoading(true)
     setError(null)
     setStatus(undefined)
     try {
-      const response = await dataApi.get<T>(pathRef.current, {
-        params: JSON.parse(key) as Params,
-      })
+      const { params: queryParams } = JSON.parse(key) as { params?: Params }
+      const response = await dataApi.get<T>(path, { params: queryParams })
       setData(response.data)
     } catch (caught) {
       setError(errorMessage(caught))
@@ -45,7 +45,7 @@ export function useQuery<T>(path: string, params?: Params): QueryResult<T> {
     } finally {
       setLoading(false)
     }
-  }, [key])
+  }, [key, path])
 
   useEffect(() => {
     void load()

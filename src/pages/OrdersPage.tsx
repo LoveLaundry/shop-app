@@ -11,7 +11,12 @@ interface ShopOrder {
   receiving_date: string | null
   line_count: number
   pieces: number
-  received_pieces: number
+  items?: Array<{ received_qty?: number | string | null }>
+}
+
+/** The API reports per-line receipt counts, not a top-level `received_pieces`. */
+function receivedPieces(order: ShopOrder): number {
+  return (order.items ?? []).reduce((sum, item) => sum + (Number(item.received_qty) || 0), 0)
 }
 
 interface Response {
@@ -66,7 +71,7 @@ export function OrdersPage() {
               {/* Zero until the laundry counts the delivery — that gap is what
                   the shop is waiting on, so it is shown per row. */}
               <td className="px-4 py-3 tabular-nums">
-                {order.status === 'DRAFT' ? '—' : order.received_pieces}
+                {order.status === 'DRAFT' ? '—' : receivedPieces(order)}
               </td>
               <td className="px-4 py-3"><StatusChip status={order.status} /></td>
             </tr>

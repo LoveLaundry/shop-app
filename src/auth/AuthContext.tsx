@@ -69,7 +69,17 @@ function laundryChoicesFrom(error: unknown): Association[] | null {
   if (!detail || typeof detail !== 'object') return null
   const payload = detail as { code?: string; laundries?: unknown }
   if (payload.code !== 'laundry_required' || !Array.isArray(payload.laundries)) return null
-  return payload.laundries as Association[]
+  // The multi-laundry 409 only identifies the candidates. It does not carry
+  // their membership status or role, so fill in the fields the choice screen
+  // needs instead of handing it objects whose `status` is undefined.
+  return (payload.laundries as Record<string, unknown>[]).map((raw) => ({
+    laundry_id: String(raw.laundry_id ?? ''),
+    laundry_name: String(raw.laundry_name ?? raw.laundry_id ?? ''),
+    client_name: String(raw.client_name ?? ''),
+    client_type: String(raw.client_type ?? ''),
+    role_id: String(raw.role_id ?? ''),
+    status: String(raw.status ?? 'ACTIVE'),
+  }))
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {

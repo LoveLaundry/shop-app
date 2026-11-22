@@ -156,7 +156,9 @@ export function AppShell() {
         </header>
 
         <main className="app-main">
-          <Outlet />
+          {/* Switching laundry replaces the token and scope. Remount the routed
+              page so no query or form from the previous tenant survives. */}
+          <Outlet key={currentLaundry ?? 'none'} />
         </main>
 
         <footer className="app-footer">
