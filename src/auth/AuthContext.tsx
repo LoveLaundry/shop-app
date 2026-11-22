@@ -5,11 +5,16 @@ import { appConfig } from '../config/app'
 import {
   clearSession,
   isExpired,
+  readLastSignIn,
   readSession,
+  recordSignIn,
   writeSession,
+  type LastSignIn,
   type Session,
   type SessionUser,
 } from '../session'
+import { clearFeatureCache } from '../features/feature-pack/hooks'
+import { isGenericRole, normalizeAssociations, normalizeRole } from '../features/feature-pack/utils'
 import { loadAssociations, switchLaundry as switchLaundryRequest, type Association } from './associations'
 
 interface SignInInput {
@@ -34,6 +39,7 @@ interface AuthValue {
   user: SessionUser | null
   isAuthenticated: boolean
   laundries: Association[]
+  lastSignIn: LastSignIn | null
   currentLaundry: string | undefined
   signIn: (input: SignInInput) => Promise<void>
   switchLaundry: (laundryId: string) => Promise<void>
@@ -42,11 +48,24 @@ interface AuthValue {
 
 const AuthContext = createContext<AuthValue | null>(null)
 
-/** Shape a staff `/auth/login` response. */
+/**
+ * 55 — Only shop-scoped entity roles are accepted. Generic ADMIN / MANAGER /
+ * STAFF roles belong to other portals and must never drive labels or access
+ * here; missing roles fall back to the least-privileged shop display role.
+ */
+function shopRole(raw: unknown): 'SHOP_ADMIN' | 'SHOP_STAFF' {
+  const role = String(raw ?? '').toUpperCase()
+  if (isGenericRole(role)) {
+    throw new Error('This account does not have a shop-scoped role. Ask your administrator for shop credentials.')
+  }
+  return normalizeRole(role)
+}
+
+/** Shape a staff `/auth/login` response (kept for parity with the shared API). */
 function staffUser(user: Record<string, unknown>): SessionUser {
   return {
     name: String(user.user_name ?? user.auth_id ?? 'Staff'),
-    role: String(user.role_id ?? user.role ?? '').toUpperCase(),
+    role: shopRole(user.role_id ?? user.role),
     laundry: user.laundry_id ? String(user.laundry_id) : undefined,
   }
 }
@@ -55,7 +74,7 @@ function staffUser(user: Record<string, unknown>): SessionUser {
 function clientUser(client: Record<string, unknown>): SessionUser {
   return {
     name: String(client.user_name ?? client.auth_id ?? 'Client'),
-    role: String(client.role_id ?? '').toUpperCase(),
+    role: shopRole(client.role_id),
     laundry: client.laundry_id ? String(client.laundry_id) : undefined,
     clientName: client.client_name ? String(client.client_name) : undefined,
   }
@@ -69,17 +88,10 @@ function laundryChoicesFrom(error: unknown): Association[] | null {
   if (!detail || typeof detail !== 'object') return null
   const payload = detail as { code?: string; laundries?: unknown }
   if (payload.code !== 'laundry_required' || !Array.isArray(payload.laundries)) return null
-  // The multi-laundry 409 only identifies the candidates. It does not carry
-  // their membership status or role, so fill in the fields the choice screen
-  // needs instead of handing it objects whose `status` is undefined.
-  return (payload.laundries as Record<string, unknown>[]).map((raw) => ({
-    laundry_id: String(raw.laundry_id ?? ''),
-    laundry_name: String(raw.laundry_name ?? raw.laundry_id ?? ''),
-    client_name: String(raw.client_name ?? ''),
-    client_type: String(raw.client_type ?? ''),
-    role_id: String(raw.role_id ?? ''),
-    status: String(raw.status ?? 'ACTIVE'),
-  }))
+  // The multi-laundry 409 only identifies the candidates. It may omit status
+  // and role, so normalise them to ACTIVE / SHOP_STAFF for display only. The
+  // server still enforces the real membership when one is selected.
+  return normalizeAssociations(payload.laundries)
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -87,11 +99,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const stored = readSession()
     if (stored && isExpired(stored.token)) {
       clearSession()
+      clearFeatureCache()
       return null
     }
     return stored
   })
   const [laundries, setLaundries] = useState<Association[]>([])
+  const [lastSignIn, setLastSignIn] = useState<LastSignIn | null>(() => readLastSignIn())
 
   const signOut = useCallback(() => {
     clearSession()
@@ -136,11 +150,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const next: Session = { token: String(data.access_token), user }
     writeSession(next)
     setSession(next)
+    recordSignIn(username.trim(), user.clientName)
+    setLastSignIn(readLastSignIn())
   }, [])
 
   const switchLaundry = useCallback(async (laundryId: string) => {
     const next = await switchLaundryRequest(laundryId)
+    // 56, 57, 90 — replace the token, forget the previous tenant's cached
+    // responses and remember the choice for the next sign-in.
+    clearFeatureCache()
     writeSession(next)
+    localStorage.setItem('ll_shop_last_laundry', JSON.stringify(laundryId))
     setSession(next)
   }, [])
 
@@ -173,7 +193,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .get(appConfig.statusPath)
       .catch((error: unknown) => {
         const status = (error as { response?: { status?: number } })?.response?.status
-        if (!cancelled && (status === 401 || status === 403)) signOut()
+        if (!cancelled && (status === 401 || status === 403)) {
+          clearFeatureCache()
+          signOut()
+        }
       })
     return () => {
       cancelled = true
@@ -188,12 +211,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user: session?.user ?? null,
       isAuthenticated: Boolean(session),
       laundries,
+      lastSignIn,
       currentLaundry: session?.user?.laundry,
       signIn,
       switchLaundry,
       signOut,
     }),
-    [session, laundries, signIn, switchLaundry, signOut],
+    [session, laundries, lastSignIn, signIn, switchLaundry, signOut],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

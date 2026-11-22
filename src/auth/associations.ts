@@ -1,5 +1,6 @@
 import { authApi } from '../api/client'
 import type { Session, SessionUser } from '../session'
+import { isGenericRole, normalizeAssociation, normalizeRole } from '../features/feature-pack/utils'
 
 /**
  * One laundry this login is registered with.
@@ -26,7 +27,9 @@ interface LaundriesResponse {
 
 export async function loadAssociations(): Promise<Association[]> {
   const { data } = await authApi.get<LaundriesResponse>('/client/auth/laundries')
-  return data?.items ?? []
+  // 409 candidates and the laundries endpoint both go through the same
+  // normaliser: ACTIVE status and a least-privileged SHOP role for display.
+  return (data?.items ?? []).map(normalizeAssociation)
 }
 
 /**
@@ -38,9 +41,13 @@ export async function loadAssociations(): Promise<Association[]> {
 export async function switchLaundry(laundryId: string): Promise<Session> {
   const { data } = await authApi.post('/client/auth/switch', { laundry_id: laundryId })
   const client = (data?.client ?? {}) as Record<string, unknown>
+  const rawRole = String(client.role_id ?? '')
+  if (isGenericRole(rawRole)) {
+    throw new Error('That laundry did not return a shop-scoped role for this account.')
+  }
   const user: SessionUser = {
     name: String(client.user_name ?? ''),
-    role: String(client.role_id ?? '').toUpperCase(),
+    role: normalizeRole(rawRole),
     laundry: client.laundry_id ? String(client.laundry_id) : undefined,
     clientName: client.client_name ? String(client.client_name) : undefined,
   }

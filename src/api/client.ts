@@ -33,6 +33,9 @@ for (const instance of [authApi, dataApi]) {
       // for opening a page they were never allowed to see.
       if (status === 401) {
         clearSession()
+        // The shell listens for this and drops session-scoped caches and UI
+        // state at the same moment the token disappears.
+        window.dispatchEvent(new CustomEvent('ll:session-expired'))
         if (!window.location.pathname.startsWith('/login')) {
           window.location.assign('/login')
         }

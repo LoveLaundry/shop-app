@@ -44,6 +44,31 @@ export function getToken(): string | null {
   return readSession()?.token ?? null
 }
 
+/** 67 — Non-secret sign-in metadata used only for the "last signed in" line. */
+export interface LastSignIn {
+  at: number
+  username: string
+  clientName?: string
+}
+
+const LAST_SIGNIN_KEY = 'll_shop_last_signin'
+
+export function recordSignIn(username: string, clientName?: string): void {
+  const entry: LastSignIn = { at: Date.now(), username, clientName }
+  localStorage.setItem(LAST_SIGNIN_KEY, JSON.stringify(entry))
+}
+
+export function readLastSignIn(): LastSignIn | null {
+  try {
+    const raw = localStorage.getItem(LAST_SIGNIN_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as LastSignIn
+    return typeof parsed.at === 'number' && typeof parsed.username === 'string' ? parsed : null
+  } catch {
+    return null
+  }
+}
+
 /** True when the JWT has already expired, so the UI can drop it before a 401. */
 export function isExpired(token: string): boolean {
   try {

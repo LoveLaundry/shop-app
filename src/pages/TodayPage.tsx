@@ -1,6 +1,11 @@
-import { Link } from 'react-router-dom'
-import { ArrowRight, ReceiptText, Package } from 'lucide-react'
-import { formatMoney, useQuery } from '../api/hooks'
+import { useEffect, useMemo } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { ArrowRight, Package, ReceiptText, RefreshCw, ShieldCheck } from 'lucide-react'
+import { formatMoney, useCachedQuery, useFeature } from '../features/feature-pack'
+import { friendlyRole, relativeTime } from '../features/feature-pack/utils'
+import { useGlobalRefresh, usePageShortcuts } from '../features/feature-pack/hooks'
+import { LastUpdated, SkeletonRows } from '../features/feature-pack/components'
+import { useAuth } from '../auth/AuthContext'
 import { PageHeader, Stat, StateBox } from '../ui/kit'
 
 interface Summary {
@@ -14,17 +19,78 @@ interface Summary {
 }
 
 export function TodayPage() {
-  const { data, error, loading, reload } = useQuery<Summary>('/client-portal/shop/summary')
+  const { user, lastSignIn } = useAuth()
+  const navigate = useNavigate()
+  const { publishNotifications, pendingOrders, toast } = useFeature()
+  const { data, error, loading, revalidating, updatedAt, reload } = useCachedQuery<Summary>('/client-portal/shop/summary')
+
+  usePageShortcuts(reload, () => undefined)
+  useGlobalRefresh(reload)
+
+  const notifications = useMemo(() => {
+    if (!data) return []
+    const items = []
+    if (data.open_bills > 0) {
+      items.push({
+        id: 'summary-open-bills',
+        title: `${data.open_bills} open bill${data.open_bills === 1 ? '' : 's'}`,
+        detail: 'Review the outstanding invoices for this account.',
+        tone: 'warning' as const,
+        actionLabel: 'Review bills',
+        onAction: () => { void navigate('/bills') },
+      })
+    }
+    if (Number(data.outstanding_amount) > 0) {
+      items.push({
+        id: 'summary-balance',
+        title: 'Balance outstanding',
+        detail: `${formatMoney(data.outstanding_amount)} is still due on this account.`,
+        tone: 'info' as const,
+      })
+    }
+    if (pendingOrders.length > 0) {
+      items.push({
+        id: 'summary-pending',
+        title: 'Orders waiting to send',
+        detail: `${pendingOrders.length} order${pendingOrders.length === 1 ? '' : 's'} have not been confirmed by the server yet.`,
+        tone: 'warning' as const,
+      })
+    }
+    return items
+  }, [data, pendingOrders.length])
+
+  useEffect(() => {
+    publishNotifications('account-summary', notifications)
+  }, [notifications, publishNotifications])
+
+  useEffect(() => {
+    if (error) toast(`Account summary could not be refreshed: ${error}`, 'error', 'Retry', reload)
+    // Only react to a new error message, not every toast identity change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [error])
 
   return (
     <>
       <PageHeader
         title={data?.shop ?? 'Account'}
-        subtitle="Your account with this laundry — only this laundry's records are visible"
+        subtitle={`Your account with this laundry — ${friendlyRole(user?.role)} access, scoped to this laundry only`}
       />
 
+      <div className="fp-page-actions">
+        <LastUpdated at={updatedAt} refreshing={revalidating} />
+        <button type="button" className="btn btn-secondary" onClick={reload} aria-label="Refresh account summary">
+          <RefreshCw aria-hidden="true" /> Refresh
+        </button>
+      </div>
+
+      {loading && !data ? (
+        <div className="panel panel-pad mb-4" aria-label="Loading account summary">
+          <SkeletonRows count={3} />
+        </div>
+      ) : null}
+
       <StateBox
-        loading={loading}
+        loading={false}
         error={error}
         empty={!loading && !error && !data}
         onRetry={reload}
@@ -40,17 +106,24 @@ export function TodayPage() {
             />
             <Stat
               label="Balance"
-              value={formatMoney(data.outstanding_amount)}
+              value={formatMoney(data.outstanding_amount, data.currency)}
               hint="Outstanding across all bills"
             />
             <Stat
               label="Invoiced this month"
-              value={formatMoney(data.invoiced_this_month)}
+              value={formatMoney(data.invoiced_this_month, data.currency)}
               hint="Excludes cancelled bills"
             />
           </div>
         ) : null}
       </StateBox>
+
+      {lastSignIn ? (
+        <p className="fp-signin-note">
+          <ShieldCheck aria-hidden="true" />
+          Last signed in as {lastSignIn.username} {relativeTime(lastSignIn.at)}.
+        </p>
+      ) : null}
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         <Link to="/bills" className="panel panel-pad quick-link flex items-center justify-between gap-3">
