@@ -24,6 +24,7 @@ import {
 } from 'lucide-react'
 import { appConfig } from '../config/app'
 import { useAuth } from '../auth/AuthContext'
+import { ThemeSwitcher } from '../ll-theme'
 import {
   BackToTop,
   Drawer,
@@ -171,6 +172,7 @@ export function AppShell() {
 
             <div className="topbar-actions">
               <ScopeBadge scope={scope} role={user?.role} clientType={appConfig.clientType} />
+              <ThemeSwitcher compact className="fp-topbar-theme" />
 
               {canSwitch ? (
                 <label className="select-wrap">

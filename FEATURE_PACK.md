@@ -109,3 +109,18 @@
 - Shop-scoped auth only: /client/auth/login, clientType SHOP, SHOP_ADMIN / SHOP_STAFF display roles.
 - Session data stays under ll_shop_session; no client token is passed to laundry routes or /today.
 - Shop Orders received counts continue to derive from items[].received_qty.
+
+## Current platform state — unified theme sync (2026-11-23)
+
+- The 100-item catalogue above is unchanged; the in-app guide still lists the same 100 paths.
+- `src/ll-theme.tsx` and `src/ll-design-tokens.css` are now synced from the authoritative
+  `system-manegment/quotations-ui` checkout, giving the shop portal the same 20
+  contrast-checked light/dark themes, no-blue five-colour palette, semantic aliases,
+  sidebar contrast fix and print styles as the manager UI.
+- `index.html` applies the stored theme (`lovelaundry-theme`, with legacy `theme-preset`
+  migration) to `<html data-theme>` before first paint; a compact `ThemeSwitcher` in the
+  top bar changes it at runtime.
+- Feature-pack high-contrast / large-text / reduced-motion toggles remain effective under
+  every theme through an `html:root[data-contrast='high']` compatibility block.
+- Verified locally: `npm run build` (`tsc --noEmit` + Vite) and `npm test` (**9/9 passed**).
+  Node 20.16 is below Vite 8's recommended 20.19+, so the build prints an engine warning only.
