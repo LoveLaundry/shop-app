@@ -9,25 +9,12 @@ import { BillsPage } from './pages/BillsPage'
 import { OrdersPage } from './pages/OrdersPage'
 import { NewOrderPage } from './pages/NewOrderPage'
 import { AboutPage } from './pages/AboutPage'
-import { Panel, PageHeader } from './ui/kit'
-import { FeaturePanel, FeatureProvider, useFeature } from './features/feature-pack'
+import { FeatureProvider } from './features/feature-pack'
 
 function RequireAuth({ children }: { children: ReactNode }) {
   const { isAuthenticated } = useAuth()
   if (!isAuthenticated) return <Navigate to="/login" replace />
   return <>{children}</>
-}
-
-function FeaturesPage() {
-  const { toast } = useFeature()
-  return (
-    <>
-      <PageHeader title="Feature guide" subtitle="Everything available in this workspace, with its source path" />
-      <Panel>
-        <FeaturePanel onToast={toast} />
-      </Panel>
-    </>
-  )
 }
 
 export function App() {
@@ -50,7 +37,6 @@ export function App() {
               <Route path="orders" element={<OrdersPage />} />
               <Route path="orders/new" element={<NewOrderPage />} />
               <Route path="bills" element={<BillsPage />} />
-              <Route path="features" element={<FeaturesPage />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

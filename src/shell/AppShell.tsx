@@ -3,11 +3,8 @@ import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import type { LucideIcon } from 'lucide-react'
 import {
   Building2,
-  Contrast,
   FileText,
   Info,
-  Keyboard,
-  Type,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -15,7 +12,6 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   ReceiptText,
-  Search,
   Shirt,
   Ticket,
   Truck,
@@ -29,11 +25,10 @@ import {
   BackToTop,
   Drawer,
   IconButton,
-  NotificationBell,
   ScopeBadge,
   useFeature,
 } from '../features/feature-pack'
-import { friendlyRole, isActiveAssociation, pluralize, relativeTime } from '../features/feature-pack/utils'
+import { friendlyRole, isActiveAssociation, relativeTime } from '../features/feature-pack/utils'
 import { useLastLaundry, useScrolled, useSidebarCollapsed } from '../features/feature-pack/hooks'
 import clsx from 'clsx'
 
@@ -45,7 +40,6 @@ const NAV_ICONS: Record<string, LucideIcon> = {
   '/deliveries': Truck,
   '/invoices': FileText,
   '/bills': ReceiptText,
-  '/features': Keyboard,
 }
 
 export function AppShell() {
@@ -56,18 +50,7 @@ export function AppShell() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const switchedRef = useRef(false)
   const scrolled = useScrolled()
-  const {
-    notifications,
-    openNotifications,
-    openCommandPalette,
-    openShortcuts,
-    openFeatures,
-    safeSignOut,
-    highContrast,
-    toggleHighContrast,
-    largeText,
-    toggleLargeText,
-  } = useFeature()
+  const { safeSignOut } = useFeature()
 
   // 5 — A route change always dismisses the mobile drawer.
   useEffect(() => {
@@ -136,14 +119,6 @@ export function AppShell() {
         <p className="sidebar-section">Workspace</p>
         <nav className="sidebar-nav" aria-label="Main navigation">
           {navItems}
-          <NavLink
-            to="/features"
-            aria-current={isCurrent('/features') ? 'page' : undefined}
-            className={({ isActive }) => clsx('sidebar-link', isActive && 'is-active')}
-          >
-            <Keyboard aria-hidden="true" />
-            <span className="sidebar-link-label">Feature guide</span>
-          </NavLink>
         </nav>
 
         <div className="sidebar-bottom">
@@ -199,12 +174,6 @@ export function AppShell() {
                 </label>
               ) : null}
 
-              <NotificationBell count={notifications.length} onClick={openNotifications} />
-              <IconButton label="Open command palette (Ctrl+K)" icon={Search} onClick={openCommandPalette} className="fp-topbar-utility" />
-              <IconButton label="Keyboard shortcuts" icon={Keyboard} onClick={openShortcuts} className="fp-topbar-utility" />
-              <IconButton label="Feature guide" icon={LayoutDashboard} onClick={openFeatures} className="fp-topbar-utility" />
-              <IconButton label={highContrast ? 'Turn off high contrast' : 'Turn on high contrast'} icon={Contrast} active={highContrast} onClick={toggleHighContrast} className="fp-topbar-utility" />
-              <IconButton label={largeText ? 'Use normal text size' : 'Use larger text'} icon={Type} active={largeText} onClick={toggleLargeText} className="fp-topbar-utility" />
               <IconButton label="Open navigation menu" icon={Menu} onClick={() => setDrawerOpen(true)} className="fp-menu-trigger" />
 
               <div className="app-user">
@@ -265,41 +234,12 @@ export function AppShell() {
         <p className="panel-note">Signed in as {user?.name ?? 'user'} · {friendlyRole(user?.role)}</p>
         <nav className="fp-drawer-nav" aria-label="Drawer navigation">
           {navItems}
-          <NavLink
-            to="/features"
-            className={({ isActive }) => clsx('sidebar-link', isActive && 'is-active')}
-            onClick={() => setDrawerOpen(false)}
-          >
-            <Keyboard aria-hidden="true" />
-            Feature guide ({pluralize(100, 'feature')})
-          </NavLink>
           <NavLink to="/about" className={({ isActive }) => clsx('sidebar-link', isActive && 'is-active')} onClick={() => setDrawerOpen(false)}>
             <Info aria-hidden="true" />
             About this portal
           </NavLink>
         </nav>
-        {/* Mobile counterpart of the topbar utilities hidden below 640px. */}
-        <p className="fp-drawer-section">Workspace controls</p>
         <div className="fp-drawer-actions">
-          <button type="button" className="btn btn-secondary" onClick={openCommandPalette}><Search aria-hidden="true" /> Command palette</button>
-          <button type="button" className="btn btn-secondary" onClick={openShortcuts}><Keyboard aria-hidden="true" /> Shortcuts</button>
-          <button type="button" className="btn btn-secondary" onClick={openFeatures}><LayoutDashboard aria-hidden="true" /> Feature guide</button>
-          <button
-            type="button"
-            className="btn btn-secondary"
-            aria-pressed={highContrast}
-            onClick={toggleHighContrast}
-          >
-            <Contrast aria-hidden="true" /> {highContrast ? 'Normal contrast' : 'High contrast'}
-          </button>
-          <button
-            type="button"
-            className="btn btn-secondary"
-            aria-pressed={largeText}
-            onClick={toggleLargeText}
-          >
-            <Type aria-hidden="true" /> {largeText ? 'Normal text' : 'Large text'}
-          </button>
           <button
             type="button"
             className="btn btn-secondary"

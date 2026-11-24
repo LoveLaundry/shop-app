@@ -2515,3 +2515,92 @@ button.hover\:border-slate-900:hover { border-color: var(--brand) !important; }
     min-width: 40px;
   }
 }
+
+/* Fit the shell at tablet/mid-desktop widths, where the sidebar is hidden but
+   the phone-specific wrap rules have not yet taken over. */
+@media (min-width: 641px) and (max-width: 1023px) {
+  .topbar-main {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0.6rem 0.75rem;
+  }
+  .topbar-title {
+    flex: 1 1 100%;
+  }
+  .topbar-actions {
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 0.45rem;
+  }
+  .scope-select {
+    max-width: min(14rem, 32vw);
+  }
+  .select-wrap,
+  .fp-scope-badge {
+    max-width: 100%;
+  }
+  .app-user {
+    margin-left: auto;
+  }
+  .mobile-nav {
+    width: 100%;
+    max-width: 100%;
+    overscroll-behavior-inline: contain;
+  }
+}
+
+/* Global containment: flex/grid children must be allowed to shrink before any
+   internal scroller or wrapping behaviour is applied. */
+.app-shell,
+.app-content,
+.app-topbar,
+.app-main,
+.app-footer,
+.auth-layout,
+.about-layout,
+.auth-frame,
+.about-card {
+  max-width: 100%;
+}
+.app-main > *,
+.topbar-main > *,
+.topbar-actions > *,
+.page-header > *,
+.panel,
+.fp-table-section,
+.fp-table-toolbar > *,
+.fp-detail-grid > *,
+.app-footer-inner > * {
+  min-width: 0;
+  max-width: 100%;
+}
+.data-table-wrap,
+.fp-table-viewport,
+.fp-table-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+/* Overlays stay inside short/wide viewports too; phone margins are untouched. */
+@media (min-width: 641px) {
+  .fp-overlay {
+    padding: 0.75rem;
+  }
+  .fp-dialog,
+  .fp-guide-dialog,
+  .fp-palette,
+  .fp-drawer {
+    max-width: calc(100vw - 1.5rem);
+    max-height: calc(100dvh - 1.5rem);
+  }
+  .fp-dialog-body,
+  .fp-palette-results,
+  .fp-guide-scroll,
+  .fp-drawer-body {
+    min-height: 0;
+    overflow-y: auto;
+  }
+}
