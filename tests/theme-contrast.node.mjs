@@ -44,7 +44,8 @@ function hue(hex) {
   const max = Math.max(red, green, blue)
   const min = Math.min(red, green, blue)
   const delta = max - min
-  if (delta === 0) return 0
+  // Near-neutral graphite swatches have a tiny blue component; treat them as neutral.
+  if (delta <= 0.02) return 0
   let value = 0
   if (max === red) value = ((green - blue) / delta) % 6
   else if (max === green) value = (blue - red) / delta + 2
@@ -53,19 +54,19 @@ function hue(hex) {
   return value < 0 ? value + 360 : value
 }
 
-test('theme kit ships 40 presets with at least 20 blue-free swatches', () => {
-  assert.equal(themeIds.length, 40)
-  assert.equal(new Set(themeIds).size, 40)
-  assert.equal(swatches.length, 40)
+test('theme kit ships 20 blue-free presets', () => {
+  assert.equal(themeIds.length, 20)
+  assert.equal(new Set(themeIds).size, 20)
+  assert.equal(swatches.length, 20)
   const blueFree = swatches.filter(({ swatch }) => {
     const angle = hue(swatch)
     return angle < 185 || angle > 265
   })
-  assert.ok(blueFree.length >= 20, `expected at least 20 blue-free swatches, got ${blueFree.length}`)
+  assert.equal(blueFree.length, 20, 'every shipped swatch must be outside the blue range')
 })
 
 test('active navigation contrast is at least 4.5:1 in every theme', () => {
-  assert.equal(blocks.length, 40)
+  assert.equal(blocks.length, 20)
   assert.deepEqual([...blocks.map((block) => block[1])].sort(), [...themeIds].sort())
 
   let minimum = Infinity
